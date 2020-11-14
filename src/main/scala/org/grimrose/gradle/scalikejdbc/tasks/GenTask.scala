@@ -27,7 +27,7 @@ class GenTask extends DefaultTask {
 
     val gen = adopter.loadGenerator(getName, getTableName, Option(getClassName), srcDir, testDir)
     gen.foreach { g =>
-      g.writeModelIfNotExist()
+      g.writeModelIfNonexistentAndUnskippable()
       g.writeSpecIfNotExist(g.specAll())
     }
   }

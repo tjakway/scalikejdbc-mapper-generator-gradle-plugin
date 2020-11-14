@@ -20,7 +20,7 @@ class GenAllTask extends DefaultTask {
     val adopter = ScalikeJDBCMapperGeneratorAdopter(getProject)
 
     adopter.allGenerators(srcDir, testDir).foreach { g =>
-      g.writeModelIfNotExist()
+      g.writeModelIfNonexistentAndUnskippable()
       g.writeSpecIfNotExist(g.specAll())
     }
   }
