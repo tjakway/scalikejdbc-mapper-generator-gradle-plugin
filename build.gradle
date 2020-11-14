@@ -1,18 +1,9 @@
-
 plugins {
-    id 'groovy'
     id 'scala'
-    id 'idea'
-    id 'maven'
-    id 'com.jfrog.bintray' version '0.6'
 }
 
 group = 'org.grimrose.gradle'
 version = "$baseVersion" + (snapshotVersion ? "-SNAPSHOT" : "")
-
-project.ext {
-    jdkVersion = '1.7'
-}
 
 repositories {
     mavenCentral()
@@ -20,43 +11,27 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
+    implementation gradleApi()
 
     // scalikejdbc
-    compile "org.scala-lang:scala-library:$scalaFullVersion"
+    implementation "org.scala-lang:scala-library:$scalaFullVersion"
 
-    compile "org.scalikejdbc:scalikejdbc_$scalaVersion:$scalikejdbcVersion"
-    compile "org.scalikejdbc:scalikejdbc-config_$scalaVersion:$scalikejdbcVersion"
-    compile "org.scalikejdbc:scalikejdbc-mapper-generator-core_$scalaVersion:$scalikejdbcVersion"
-    runtime 'ch.qos.logback:logback-classic:1.1.2'
-    testCompile "org.scalikejdbc:scalikejdbc-test_$scalaVersion:$scalikejdbcVersion"
-    testCompile "org.scalatest:scalatest_$scalaVersion:2.2.2"
-    testRuntime "org.scala-lang.modules:scala-xml_$scalaVersion:1.0.2"
+    implementation "org.scalikejdbc:scalikejdbc_$scalaVersion:$scalikejdbcVersion"
+    implementation "org.scalikejdbc:scalikejdbc-config_$scalaVersion:$scalikejdbcVersion"
+    implementation "org.scalikejdbc:scalikejdbc-mapper-generator-core_$scalaVersion:$scalikejdbcVersion"
+    runtimeOnly 'ch.qos.logback:logback-classic:$logbackVersion'
+    testImplementation "org.scalikejdbc:scalikejdbc-test_$scalaVersion:$scalikejdbcVersion"
+    testImplementation "org.scalatest:scalatest_$scalaVersion:2.2.2"
+    testRuntimeOnly "org.scala-lang.modules:scala-xml_$scalaVersion:1.0.2"
 
-    testCompile 'junit:junit:4.11'
+    testImplementation 'junit:junit:4.11'
 
-    testCompile "com.h2database:h2:$h2Version"
+    testImplementation "com.h2database:h2:$h2Version"
 
 }
 
-sourceCompatibility = targetCompatibility = jdkVersion
-
-tasks.withType(AbstractCompile) { options.encoding = 'UTF-8' }
 tasks.withType(ScalaCompile) {
-    scalaCompileOptions.useAnt = false
     scalaCompileOptions.additionalParameters = ["-feature", "-Xlint", "-language:_", "-deprecation", "-unchecked", "-Xfatal-warnings"]
-}
-
-wrapper {
-    gradleVersion = '2.1'
-}
-
-idea {
-    project {
-        jdkName = jdkVersion
-        languageLevel = jdkVersion
-    }
 }
 
 test {
