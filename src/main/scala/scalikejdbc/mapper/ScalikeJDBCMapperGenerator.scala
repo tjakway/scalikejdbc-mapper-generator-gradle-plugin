@@ -30,7 +30,7 @@ class ScalikeJDBCMapperGenerator {
 
   case class JDBCSettings(driver: String, url: String, username: String, password: String, schema: String)
 
-  case class GeneratorSettings(packageName: String, template: String, testTemplate: String, lineBreak: String, caseClassOnly: Boolean, encoding: String, autoConstruct: Boolean, defaultAutoSession: Boolean)
+  case class GeneratorSettings(packageName: String, template: String, testTemplate: String, lineBreak: String, encoding: String, autoConstruct: Boolean, defaultAutoSession: Boolean)
 
   def loadSettings(projectDirectoryPath: String): (JDBCSettings, GeneratorSettings) = {
     val props = new java.util.Properties
@@ -62,7 +62,6 @@ class ScalikeJDBCMapperGenerator {
       template = Option(props.get("generator.template")).map(_.toString).getOrElse(defaultConfig.template.name),
       testTemplate = Option(props.get("generator.testTemplate")).map(_.toString).getOrElse(GeneratorTestTemplate.specs2unit.name),
       lineBreak = Option(props.get("generator.lineBreak")).map(_.toString).getOrElse(defaultConfig.lineBreak.name),
-      caseClassOnly = Option(props.get("generator.caseClassOnly")).map(_.toString.toBoolean).getOrElse(defaultConfig.caseClassOnly),
       encoding = Option(props.get("generator.encoding")).map(_.toString).getOrElse(defaultConfig.encoding),
       autoConstruct = Option(props.get("generator.autoConstruct")).map(_.toString.toBoolean).getOrElse(defaultConfig.autoConstruct),
       defaultAutoSession = Option(props.get("generator.defaultAutoSession")).map(_.toString.toBoolean).getOrElse(defaultConfig.defaultAutoSession)
@@ -77,7 +76,6 @@ class ScalikeJDBCMapperGenerator {
       template = GeneratorTemplate(generatorSettings.template),
       testTemplate = GeneratorTestTemplate(generatorSettings.testTemplate),
       lineBreak = LineBreak(generatorSettings.lineBreak),
-      caseClassOnly = generatorSettings.caseClassOnly,
       encoding = generatorSettings.encoding,
       autoConstruct = generatorSettings.autoConstruct,
       defaultAutoSession = generatorSettings.defaultAutoSession
