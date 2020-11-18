@@ -19,12 +19,13 @@ dependencies {
     implementation "org.scalikejdbc:scalikejdbc_$scalaVersion:$scalikejdbcVersion"
     implementation "org.scalikejdbc:scalikejdbc-config_$scalaVersion:$scalikejdbcVersion"
     implementation "org.scalikejdbc:scalikejdbc-mapper-generator-core_$scalaVersion:$scalikejdbcVersion"
-    runtimeOnly 'ch.qos.logback:logback-classic:$logbackVersion'
+    runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "org.scalikejdbc:scalikejdbc-test_$scalaVersion:$scalikejdbcVersion"
-    testImplementation "org.scalatest:scalatest_$scalaVersion:2.2.2"
-    testRuntimeOnly "org.scala-lang.modules:scala-xml_$scalaVersion:1.0.2"
+    testImplementation "org.scalatest:scalatest_$scalaVersion:$scalatestVersion"
+    testImplementation "org.scalactic:scalactic_$scalaVersion:$scalatestVersion"
+    testImplementation "org.scalatestplus:junit-4-13_$scalaVersion:$scalatestJunitVersion"
 
-    testImplementation 'junit:junit:4.11'
+    testImplementation "junit:junit:$junitVersion"
 
     testImplementation "com.h2database:h2:$h2Version"
 
