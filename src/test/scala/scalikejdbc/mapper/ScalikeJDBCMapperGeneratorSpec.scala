@@ -30,7 +30,6 @@ class ScalikeJDBCMapperGeneratorSpec extends AnyFlatSpec with Matchers {
     generator.packageName should be("models")
     generator.template should be("queryDsl")
     generator.testTemplate should be("ScalaTestFlatSpec")
-    generator.caseClassOnly should be(true)
     generator.encoding should be("UTF-8")
     generator.autoConstruct should be(false)
     generator.defaultAutoSession should be(true)
