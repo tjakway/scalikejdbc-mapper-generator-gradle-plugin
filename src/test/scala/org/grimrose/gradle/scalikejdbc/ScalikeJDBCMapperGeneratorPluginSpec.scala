@@ -2,13 +2,14 @@ package org.grimrose.gradle.scalikejdbc
 
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])
-class ScalikeJDBCMapperGeneratorPluginSpec extends FlatSpec with Matchers {
+class ScalikeJDBCMapperGeneratorPluginSpec extends AnyFlatSpec with Matchers {
 
   "GenTask" should "be applied" in {
     val project = ProjectBuilder.builder().build()

@@ -6,15 +6,16 @@ import java.nio.file.{Files, Path, Paths}
 
 import org.gradle.tooling.GradleConnector
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import scalikejdbc.{ConnectionPool, DB, SQL}
 
 import scala.collection.mutable
 import scala.util.control.Exception._
 
 @RunWith(classOf[JUnitRunner])
-class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends FunSpec with Matchers {
+class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec with Matchers {
 
   describe("scalikejdbcGenEcho") {
     it("should echo") {
