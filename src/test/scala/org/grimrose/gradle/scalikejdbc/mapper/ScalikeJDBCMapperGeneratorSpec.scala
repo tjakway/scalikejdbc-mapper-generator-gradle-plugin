@@ -1,11 +1,11 @@
-package scalikejdbc.mapper
+package org.grimrose.gradle.scalikejdbc.mapper
 
 import java.nio.file.Paths
 
 import org.junit.runner.RunWith
-import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ScalikeJDBCMapperGeneratorSpec extends AnyFlatSpec with Matchers {

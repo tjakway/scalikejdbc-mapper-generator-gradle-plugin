@@ -13,10 +13,12 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package scalikejdbc.mapper
+package org.grimrose.gradle.scalikejdbc.mapper
 
 import java.io.{File, FileNotFoundException}
 import java.util.Locale.{ENGLISH => en}
+
+import scalikejdbc.mapper.{CodeGenerator, GeneratorConfig, GeneratorTemplate, GeneratorTestTemplate, LineBreak, Model}
 
 import scala.language.reflectiveCalls
 import scala.util.control.Exception._
