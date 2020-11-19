@@ -1,9 +1,7 @@
 plugins {
     id 'scala'
+    id 'maven-publish'
 }
-
-group = 'org.grimrose.gradle'
-version = "$baseVersion" + (snapshotVersion ? "-SNAPSHOT" : "")
 
 repositories {
     mavenCentral()
@@ -13,9 +11,9 @@ repositories {
 dependencies {
     implementation gradleApi()
 
-    // scalikejdbc
     implementation "org.scala-lang:scala-library:$scalaFullVersion"
 
+    // scalikejdbc
     implementation "org.scalikejdbc:scalikejdbc_$scalaVersion:$scalikejdbcVersion"
     implementation "org.scalikejdbc:scalikejdbc-config_$scalaVersion:$scalikejdbcVersion"
     implementation "org.scalikejdbc:scalikejdbc-mapper-generator-core_$scalaVersion:$scalikejdbcVersion"
@@ -38,4 +36,15 @@ tasks.withType(ScalaCompile) {
 test {
     exclude '**/*$*'
     testLogging { exceptionFormat "full" }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            group = 'org.grimrose.gradle'
+            version = "$baseVersion" + (snapshotVersion ? "-SNAPSHOT" : "")
+
+            from components.java
+        }
+    }
 }
