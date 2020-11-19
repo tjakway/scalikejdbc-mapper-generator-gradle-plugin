@@ -6,15 +6,21 @@ import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.collection.JavaConversions._
-
 @RunWith(classOf[JUnitRunner])
 class ScalikeJDBCMapperGeneratorPluginSpec extends AnyFlatSpec with Matchers {
+
+  private def jMap[K, V](xs: Seq[(K, V)]): java.util.Map[K, V] = {
+    import scala.collection.JavaConverters
+    JavaConverters.mapAsJavaMap(xs.toMap)
+  }
+  private def jMap[K, V](x: (K, V)): java.util.Map[K, V] = {
+    jMap(Seq(x))
+  }
 
   "GenTask" should "be applied" in {
     val project = ProjectBuilder.builder().build()
 
-    project.apply(Map("plugin" -> "org.grimrose.gradle.scalikejdbc"))
+    project.apply(jMap("plugin" -> "org.grimrose.gradle.scalikejdbc"))
 
     val task = project.getTasks.findByName("scalikejdbcGen")
     task should not(be(null))
@@ -32,7 +38,7 @@ class ScalikeJDBCMapperGeneratorPluginSpec extends AnyFlatSpec with Matchers {
   "GenForceTask" should "be applied" in {
     val project = ProjectBuilder.builder().build()
 
-    project.apply(Map("plugin" -> "org.grimrose.gradle.scalikejdbc"))
+    project.apply(jMap("plugin" -> "org.grimrose.gradle.scalikejdbc"))
 
     val task = project.getTasks.findByName("scalikejdbcGenForce")
     task should not(be(null))
@@ -51,7 +57,7 @@ class ScalikeJDBCMapperGeneratorPluginSpec extends AnyFlatSpec with Matchers {
   "GenAllTask" should "be applied" in {
     val project = ProjectBuilder.builder().build()
 
-    project.apply(Map("plugin" -> "org.grimrose.gradle.scalikejdbc"))
+    project.apply(jMap("plugin" -> "org.grimrose.gradle.scalikejdbc"))
 
     val task = project.getTasks.findByName("scalikejdbcGenAll")
     task should not(be(null))
@@ -64,7 +70,7 @@ class ScalikeJDBCMapperGeneratorPluginSpec extends AnyFlatSpec with Matchers {
   "GenAllForceTask" should "be applied" in {
     val project = ProjectBuilder.builder().build()
 
-    project.apply(Map("plugin" -> "org.grimrose.gradle.scalikejdbc"))
+    project.apply(jMap("plugin" -> "org.grimrose.gradle.scalikejdbc"))
 
     val task = project.getTasks.findByName("scalikejdbcGenAllForce")
     task should not(be(null))
@@ -76,7 +82,7 @@ class ScalikeJDBCMapperGeneratorPluginSpec extends AnyFlatSpec with Matchers {
 
   "GenEchoTask" should "be applied" in {
     val project = ProjectBuilder.builder().build()
-    project.apply(Map("plugin" -> "org.grimrose.gradle.scalikejdbc"))
+    project.apply(jMap("plugin" -> "org.grimrose.gradle.scalikejdbc"))
 
     val task = project.getTasks.findByPath("scalikejdbcGenEcho")
     task should not(be(null))
