@@ -18,7 +18,7 @@ import scala.util.control.Exception._
 class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec with Matchers {
 
   describe("scalikejdbcGenEcho") {
-    it("should echo") {
+    ignore("should echo") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
@@ -31,7 +31,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
         actual should include("class MemberGroupSpec")
       }
     }
-    it("should echo with table name and class name") {
+    ignore("should echo with table name and class name") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
@@ -44,7 +44,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
         actual should include("class CustomMemberGroupSpec")
       }
     }
-    it("should fail") {
+    ignore("should fail") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
@@ -59,7 +59,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
   }
 
   describe("scalikejdbcGen") {
-    it("should create file") {
+    ignore("should create file") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
@@ -77,7 +77,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
         files.find(_.getName == "MemberGroupSpec.scala") should be(defined)
       }
     }
-    it("should be able to compile") {
+    ignore("should be able to compile") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath,
           """
@@ -109,7 +109,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
         dirs.find(_.getName == "classes") should be(defined)
       }
     }
-    it("should create file at custom directory") {
+    ignore("should create file at custom directory") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath,
           """
@@ -137,7 +137,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
   }
 
   describe("scalikejdbcGenAll") {
-    it("should create all table file") {
+    ignore("should create all table file") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
@@ -160,7 +160,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
   }
 
   describe("scalikejdbcGenForce") {
-    it("should overwrite table file") {
+    ignore("should overwrite table file") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
@@ -192,7 +192,7 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
   }
 
   describe("scalikejdbcGenAllForce") {
-    it("should overwrite all table file") {
+    ignore("should overwrite all table file") {
       withTempDirectory { tmp =>
         makeBuildScript(tmp.toPath)
         makeScalikeJDBCPropertiesFile(tmp.toPath)
