@@ -26,7 +26,8 @@ import java.util.Properties
 import java.util.regex.Pattern
 
 import org.grimrose.gradle.scalikejdbc.MapperException
-import scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, GeneratorTemplate, GeneratorTestTemplate, LineBreak, Model, ReturnCollectionType}
+import org.grimrose.gradle.scalikejdbc.util.Util
+import scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, GeneratorTemplate, GeneratorTestTemplate, LineBreak, Model, ReturnCollectionType, Table}
 
 import scala.collection.JavaConverters
 import scala.language.reflectiveCalls
@@ -146,7 +147,49 @@ class ScalikeJDBCMapperGenerator {
       tableNameToSyntaxName = generatorSettings.tableNameToSyntaxName,
       tableNameToSyntaxVariableName = generatorSettings.tableNameToSyntaxVariableName)
 
-  def generator(tableName: String, className: Option[String], srcDir: File, testDir: File, jdbc: JDBCSettings, generatorSettings: GeneratorSettings): Option[CodeGenerator] = {
+  def generator(tableName: String, className: Option[String],
+                srcDir: File, testDir: File,
+                jdbc: JDBCSettings,
+                generatorSettings: GeneratorSettings): Option[CodeGenerator] = {
+    def errMessage(model: Model,
+                   printAllTables: Boolean): String = {
+      val classNameStr =
+        className.map(name => s" (used to generate class $name)")
+      val fmtStr = "Could not find table %s" +
+        classNameStr.getOrElse("") +
+        "\n\tsrcDir: %s" +
+        "\n\ttestDir: %s" +
+        "\n\tJDBCSettings: %s" +
+        "\n\tGeneratorSettings: %s" +
+        "%s" //allTablesStr
+
+      def allTablesStr: String = {
+        if(printAllTables) {
+          val foundTables = allTables(true, jdbc, model)
+          val foundTablesStr = {
+            if(foundTables.isEmpty) {
+              "< no tables found >"
+            } else {
+              "Database contains the following tables and views: " +
+                "[ " + Util.joinWithComma(foundTables) + " ]"
+            }
+          }
+
+          "\n\t" + foundTablesStr
+        } else {
+          ""
+        }
+      }
+
+      String.format(fmtStr,
+        tableName,
+        srcDir.getAbsolutePath,
+        testDir.getAbsolutePath,
+        jdbc,
+        generatorSettings,
+        allTablesStr)
+    }
+
     val config = generatorConfig(srcDir, testDir, generatorSettings)
     Class.forName(jdbc.driver) // load specified jdbc driver
     val model = Model(jdbc.url, jdbc.username, jdbc.password)
@@ -156,9 +199,30 @@ class ScalikeJDBCMapperGenerator {
       .map { table =>
         Option(new CodeGenerator(table, className)(config))
       } getOrElse {
-        println("The table is not found.")
+        errMessage(model, printAllTables = true)
         None
       }
+  }
+
+  private def allTables(includeViews: Boolean,
+                        jdbc: JDBCSettings): Seq[Table] = {
+    allTables(includeViews, jdbc, Model(jdbc.url, jdbc.username, jdbc.password))
+  }
+
+  private def allTables(includeViews: Boolean,
+                        jdbc: JDBCSettings,
+                        model: Model): Seq[Table] = {
+
+    def views = {
+      if(includeViews) {
+        model.allViews(jdbc.schema)
+      } else {
+        Seq()
+      }
+    }
+
+    Class.forName(jdbc.driver)
+    model.allTables(jdbc.schema) ++ views
   }
 
   def allGenerators(srcDir: File, testDir: File, jdbc: JDBCSettings, generatorSettings: GeneratorSettings): collection.Seq[CodeGenerator] = {
