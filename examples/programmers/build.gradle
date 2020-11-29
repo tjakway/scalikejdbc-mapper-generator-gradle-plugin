@@ -4,53 +4,57 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "org.grimrose.gradle:scalikejdbc-mapper-generator-gradle-plugin:0.1-SNAPSHOT"
-        classpath "com.h2database:h2:1.4.177"
+        classpath "org.grimrose.gradle:scalikejdbc-mapper-generator-gradle-plugin:$baseVersion-SNAPSHOT"
+        classpath "com.h2database:h2:$h2Version"
     }
 }
 
 plugins {
     id 'scala'
-    id 'idea'
-    id 'application'
 }
 
 apply plugin: 'org.grimrose.gradle.scalikejdbc'
 
 repositories {
+    mavenCentral()
     jcenter()
 }
 
-project.ext {
-    scalikejdbcVersion = '2.1.2'
-}
-
 dependencies {
-    compile 'org.scala-lang:scala-library:2.11.2'
+    implementation "org.scala-lang:scala-library:$scalaFullVersion"
 
-    compile "org.scalikejdbc:scalikejdbc_2.11:$scalikejdbcVersion"
-    testCompile "org.scalikejdbc:scalikejdbc-test_2.11:$scalikejdbcVersion"
-    compile "org.scalikejdbc:scalikejdbc-syntax-support-macro_2.11:$scalikejdbcVersion"
-    runtime "org.slf4j:slf4j-simple:1.7.7"
-    compile "com.h2database:h2:1.4.177"
+    implementation "org.scalikejdbc:scalikejdbc_$scalaVersion:$scalikejdbcVersion"
+    testImplementation "org.scalikejdbc:scalikejdbc-test_$scalaVersion:$scalikejdbcVersion"
 
-    testCompile 'org.scalatest:scalatest_2.11:2.1.5'
-    testRuntime 'org.scala-lang.modules:scala-xml_2.11:1.0.2'
-    testCompile "org.specs2:specs2-core:2.4.4"
+    implementation "org.scalikejdbc:scalikejdbc-syntax-support-macro_$scalaVersion:$scalikejdbcVersion"
 
-    testCompile 'junit:junit:4.11'
+    runtimeOnly "com.h2database:h2:$h2Version"
+
+    //testRuntime 'org.scala-lang.modules:scala-xml_2.11:1.0.2'
+    //testCompile "org.specs2:specs2-core:2.4.4"
+
+    implementation "org.scalikejdbc:scalikejdbc_$scalaVersion:$scalikejdbcVersion"
+    //implementation "org.scalikejdbc:scalikejdbc-config_$scalaVersion:$scalikejdbcVersion"
+    //implementation "org.scalikejdbc:scalikejdbc-mapper-generator-core_$scalaVersion:$scalikejdbcVersion"
+    runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+    //testImplementation "org.scalikejdbc:scalikejdbc-test_$scalaVersion:$scalikejdbcVersion"
+    //testImplementation "org.scalatest:scalatest_$scalaVersion:$scalatestVersion"
+    //testImplementation "org.scalactic:scalactic_$scalaVersion:$scalatestVersion"
+    //testImplementation "org.scalatestplus:junit-4-13_$scalaVersion:$scalatestJunitVersion"
+
+    testImplementation "junit:junit:$junitVersion"
 }
 
-sourceCompatibility = targetCompatibility = 1.7
-
-tasks.withType(AbstractCompile) { options.encoding = 'UTF-8' }
 tasks.withType(ScalaCompile) {
-    scalaCompileOptions.useAnt = false
     scalaCompileOptions.additionalParameters = ["-feature", "-Xlint", "-language:_", "-deprecation", "-unchecked", "-Xfatal-warnings"]
 }
 
-wrapper {
-    gradleVersion = '2.1'
-}
+project.ext.mainClassName = 'initializer'
 
-mainClassName = 'initializer'
+task run(dependsOn: classes, type: JavaExec) {
+    main = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    ignoreExitValue = false
+    workingDir = rootProject.projectDir
+}
