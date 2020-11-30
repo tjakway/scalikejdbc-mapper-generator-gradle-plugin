@@ -1,6 +1,14 @@
 package org.grimrose.gradle.scalikejdbc.util
 
+import java.util.Properties
+
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.JavaConverters
+
 object Util {
+  private val logger: Logger = LoggerFactory.getLogger(getClass)
+
   private def callToString[A]: A => String = (a: A) => a.toString
   def joinWithSeparator[A](xs: Iterable[A],
                            separator: String,
@@ -30,7 +38,28 @@ object Util {
     }
   }
 
+  def joinWithSeparator[A](xs: java.util.Collection[A],
+                           separator: String,
+                           printF: A => String = callToString): String = {
+    val iterable: Iterable[A] =
+      JavaConverters.asScalaIterator(xs.iterator()).toIterable
+    joinWithSeparator(iterable, separator, printF)
+  }
+
   def joinWithComma[A](xs: Iterable[A],
                        printF: A => String = callToString): String =
     joinWithSeparator[A](xs, ", ", printF)
+
+  def mapToProperties(xs: Map[String, String]): Properties = {
+    val props = new Properties()
+    xs.foreach {
+      case (key, value) => props.setProperty(key, value)
+    }
+
+    if(xs.nonEmpty) {
+      assert(!props.isEmpty)
+    }
+
+    props
+  }
 }
