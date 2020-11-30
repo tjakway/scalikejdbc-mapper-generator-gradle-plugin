@@ -43,27 +43,7 @@ class ScalikeJDBCMapperGenerator {
   import ScalikeJDBCMapperGenerator._
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  case class JDBCSettings(driver: String, url: String, username: String, password: String, schema: String)
-
-  case class GeneratorSettings(
-    packageName: String,
-    template: String,
-    testTemplate: String,
-    lineBreak: String,
-    encoding: String,
-    autoConstruct: Boolean,
-    defaultAutoSession: Boolean,
-    dateTimeClass: DateTimeClass,
-    tableNameToClassName: String => String,
-    columnNameToFieldName: String => String,
-    returnCollectionType: ReturnCollectionType,
-    view: Boolean,
-    tableNamesToSkip: collection.Seq[String],
-    baseTypes: collection.Seq[String],
-    companionBaseTypes: collection.Seq[String],
-    tableNameToSyntaxName: String => String,
-    tableNameToSyntaxVariableName: String => String)
-
+  //TODO: get the file using project.file()
   def loadSettings(projectDirectoryPath: String): (JDBCSettings, GeneratorSettings) = {
     val props = new Properties()
     try {
