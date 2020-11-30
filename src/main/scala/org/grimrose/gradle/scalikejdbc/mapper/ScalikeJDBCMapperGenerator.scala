@@ -27,6 +27,7 @@ import java.util.regex.Pattern
 
 import org.grimrose.gradle.scalikejdbc.MapperException
 import org.grimrose.gradle.scalikejdbc.util.Util
+import org.slf4j.{Logger, LoggerFactory}
 import scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, GeneratorTemplate, GeneratorTestTemplate, LineBreak, Model, ReturnCollectionType, Table}
 
 import scala.collection.JavaConverters
@@ -40,6 +41,7 @@ import scala.util.control.Exception._
  */
 class ScalikeJDBCMapperGenerator {
   import ScalikeJDBCMapperGenerator._
+  private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   case class JDBCSettings(driver: String, url: String, username: String, password: String, schema: String)
 
@@ -199,7 +201,7 @@ class ScalikeJDBCMapperGenerator {
       .map { table =>
         Option(new CodeGenerator(table, className)(config))
       } getOrElse {
-        errMessage(model, printAllTables = true)
+        logger.error(errMessage(model, printAllTables = true))
         None
       }
   }
@@ -249,14 +251,14 @@ class ScalikeJDBCMapperGenerator {
 
 object ScalikeJDBCMapperGenerator {
    object Keys {
-     final val JDBC = "jdbc."
+     private final val JDBC = "jdbc."
      final val JDBC_DRIVER = JDBC + "driver"
      final val JDBC_URL = JDBC + "url"
      final val JDBC_USER_NAME = JDBC + "username"
      final val JDBC_PASSWORD = JDBC + "password"
      final val JDBC_SCHEMA = JDBC + "schema"
 
-     final val GENERATOR = "generator."
+     private final val GENERATOR = "generator."
      final val PACKAGE_NAME = GENERATOR + "packageName"
      final val TEMPLATE = GENERATOR + "template"
      final val TEST_TEMPLATE = GENERATOR + "testTemplate"
