@@ -25,6 +25,7 @@ import java.util.Locale.{ENGLISH => en}
 import java.util.Properties
 import java.util.regex.Pattern
 
+import org.gradle.api.Project
 import org.grimrose.gradle.scalikejdbc.MapperException
 import org.grimrose.gradle.scalikejdbc.util.Util
 import org.slf4j.{Logger, LoggerFactory}
@@ -33,6 +34,8 @@ import scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, Genera
 import scala.collection.JavaConverters
 import scala.language.reflectiveCalls
 import scala.util.control.Exception._
+import org.grimrose.gradle.scalikejdbc.interop
+import org.grimrose.gradle.scalikejdbc.util.MergeProperties.ResolvePropertiesConflict
 
 /**
  * ScalikeJDBC Mapper Generator
@@ -42,6 +45,15 @@ import scala.util.control.Exception._
 class ScalikeJDBCMapperGenerator {
   import ScalikeJDBCMapperGenerator._
   private val logger: Logger = LoggerFactory.getLogger(getClass)
+
+  def resolveSettings(jdbcConfig: interop.JdbcConfig,
+                      generatorConfig: interop.GeneratorConfig,
+                      propertyPath: Option[File],
+                      loadPropertiesSetting: LoadPropertiesSetting):
+    (JDBCSettings, GeneratorSettings) = {
+
+    
+  }
 
   //TODO: get the file using project.file()
   def loadSettings(projectDirectoryPath: String): (JDBCSettings, GeneratorSettings) = {
@@ -346,9 +358,37 @@ object ScalikeJDBCMapperGenerator {
     )
   }
 
+  sealed trait LoadPropertiesSetting {
+    def resolvePropertiesConflict: ResolvePropertiesConflict
+  }
+  object LoadPropertiesSetting {
+    case object PreferGradle extends LoadPropertiesSetting {
+      override def resolvePropertiesConflict: ResolvePropertiesConflict =
+        ResolvePropertiesConflict.PreferLeft
+    }
+
+    case object PreferPropertiesFile extends LoadPropertiesSetting {
+      override def resolvePropertiesConflict: ResolvePropertiesConflict =
+        ResolvePropertiesConflict.PreferRight
+    }
+
+    case object AssertNoConflict extends LoadPropertiesSetting {
+      override def resolvePropertiesConflict: ResolvePropertiesConflict =
+        new ResolvePropertiesConflict.ThrowException {
+          override protected def mkThrowable(msg: String): Throwable =
+            DuplicatePropertiesException(msg)
+        }
+    }
+  }
+
   private def commaSeparated(props: Properties, key: String): collection.Seq[String] =
     getString(props)(key).map(_.split(',').map(_.trim).filter(_.nonEmpty).toList).getOrElse(Nil)
 
   class MapperGeneratorConfigException(override val msg: String)
     extends MapperException(msg)
+
+  case class DuplicatePropertiesException(conflictMsg: String)
+    extends MapperGeneratorConfigException(
+      String.format("User asserted no duplicates between " +
+        "gradle-defined settings and mapper property files\n%s", conflictMsg))
 }
