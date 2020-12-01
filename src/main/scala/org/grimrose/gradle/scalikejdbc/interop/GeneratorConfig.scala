@@ -1,51 +1,64 @@
 package org.grimrose.gradle.scalikejdbc.interop
 
-import java.util.{ArrayList, Collection, Properties}
+import java.util.{ArrayList, Collection, Optional => JOptional}
 
-import org.gradle.api.tasks.Input
-import org.grimrose.gradle.scalikejdbc.util.Util
+import org.gradle.api.tasks.{Input, Optional}
+import org.grimrose.gradle.scalikejdbc.interop.ToProperties.PropertyValue
 
 import scala.beans.BeanProperty
 
 class GeneratorConfig {
   @BeanProperty
   @Input
+  @Optional
   var packageName: String =_
   @BeanProperty
   @Input
+  @Optional
   var template: String = _
   @BeanProperty
   @Input
+  @Optional
   var testTemplate: String = _
   @BeanProperty
   @Input
+  @Optional
   var lineBreak: String = _
   @BeanProperty
   @Input
+  @Optional
   var encoding: String = _
   @BeanProperty
   @Input
-  var autoConstruct: Boolean = _
+  @Optional
+  var autoConstruct: JOptional[Boolean] = JOptional.empty()
   @BeanProperty
   @Input
-  var defaultAutoSession: Boolean = _
+  @Optional
+  var defaultAutoSession: JOptional[Boolean] = JOptional.empty()
   @BeanProperty
   @Input
+  @Optional
   var dateTimeClass: String = _
   @BeanProperty
   @Input
+  @Optional
   var returnCollectionType: String = _
   @BeanProperty
   @Input
-  var view: Boolean = _
+  @Optional
+  var view: JOptional[Boolean] = JOptional.empty()
   @BeanProperty
   @Input
+  @Optional
   var tableNamesToSkip: Collection[String] = new ArrayList()
   @BeanProperty
   @Input
+  @Optional
   var baseTypes: Collection[String] = new ArrayList()
   @BeanProperty
   @Input
+  @Optional
   var companionBaseTypes: Collection[String] = new ArrayList()
 
   //TODO: add fields for tableNameToSyntaxName and tableNameToSyntaxVariableName
@@ -53,22 +66,25 @@ class GeneratorConfig {
 }
 
 object GeneratorConfig extends ToProperties[GeneratorConfig] {
-  override def toMap(in: GeneratorConfig): Map[String, String] = {
+  override def toAnnotatedMap(in: GeneratorConfig):
+    Map[String, ToProperties.PropertyValue] = {
+
+    import ToProperties.PropertyValue.{OptionalPropertyValue, StringValue}
     import org.grimrose.gradle.scalikejdbc.mapper.ScalikeJDBCMapperGenerator.Keys._
     Map(
-      PACKAGE_NAME -> in.packageName,
-      TEMPLATE -> in.template,
-      TEST_TEMPLATE -> in.testTemplate,
-      LINE_BREAK -> in.lineBreak,
-      ENCODING -> in.encoding,
-      AUTO_CONSTRUCT -> in.autoConstruct.toString,
-      DEFAULT_AUTO_SESSION -> in.defaultAutoSession.toString,
-      DATETIME_CLASS -> in.dateTimeClass,
-      RETURN_COLLECTION_TYPE -> in.returnCollectionType,
-      VIEW -> in.view.toString,
-      TABLE_NAMES_TO_SKIP -> formatCollection(in.tableNamesToSkip),
-      BASE_TYPES -> formatCollection(in.baseTypes),
-      COMPANION_BASE_TYPES -> formatCollection(in.companionBaseTypes)
+      PACKAGE_NAME -> StringValue(in.packageName),
+      TEMPLATE -> StringValue(in.template),
+      TEST_TEMPLATE -> StringValue(in.testTemplate),
+      LINE_BREAK -> StringValue(in.lineBreak),
+      ENCODING -> StringValue(in.encoding),
+      AUTO_CONSTRUCT -> OptionalPropertyValue(in.autoConstruct),
+      DEFAULT_AUTO_SESSION -> OptionalPropertyValue(in.defaultAutoSession),
+      DATETIME_CLASS -> StringValue(in.dateTimeClass),
+      RETURN_COLLECTION_TYPE -> StringValue(in.returnCollectionType),
+      VIEW -> OptionalPropertyValue(in.view),
+      TABLE_NAMES_TO_SKIP -> PropertyValue.Collection(in.tableNamesToSkip),
+      BASE_TYPES -> PropertyValue.Collection(in.baseTypes),
+      COMPANION_BASE_TYPES -> PropertyValue.Collection(in.companionBaseTypes)
     )
   }
 }

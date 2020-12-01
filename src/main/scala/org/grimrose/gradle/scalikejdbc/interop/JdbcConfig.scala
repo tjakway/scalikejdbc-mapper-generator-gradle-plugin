@@ -23,7 +23,8 @@ class JdbcConfig {
 }
 
 object JdbcConfig extends ToProperties[JdbcConfig] {
-  override def toMap(in: JdbcConfig): Map[String, String] = {
+  override def toAnnotatedMap(in: JdbcConfig):
+    Map[String, ToProperties.PropertyValue] = {
     import org.grimrose.gradle.scalikejdbc.mapper.ScalikeJDBCMapperGenerator.Keys._
     Map(
       JDBC_DRIVER -> in.driver,
@@ -31,6 +32,6 @@ object JdbcConfig extends ToProperties[JdbcConfig] {
       JDBC_USER_NAME -> in.username,
       JDBC_PASSWORD -> in.password,
       JDBC_SCHEMA -> in.schema
-    )
+    ).mapValues(ToProperties.PropertyValue.StringValue.apply)
   }
 }
