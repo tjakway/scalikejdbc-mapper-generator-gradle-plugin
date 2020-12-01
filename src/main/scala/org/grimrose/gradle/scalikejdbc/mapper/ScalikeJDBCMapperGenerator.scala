@@ -26,16 +26,18 @@ import java.util.Properties
 import java.util.regex.Pattern
 
 import org.gradle.api.Project
-import org.grimrose.gradle.scalikejdbc.MapperException
-import org.grimrose.gradle.scalikejdbc.util.Util
+import org.grimrose.gradle.scalikejdbc.{MapperException, interop}
+import org.grimrose.gradle.scalikejdbc.interop.ToProperties
+import org.grimrose.gradle.scalikejdbc.util.MergeProperties.ResolvePropertiesConflict
+import org.grimrose.gradle.scalikejdbc.util.MergeProperties.ResolvePropertiesConflict.PreferLeft
+import org.grimrose.gradle.scalikejdbc.util.{MergeProperties, Util}
 import org.slf4j.{Logger, LoggerFactory}
-import scalikejdbc.mapper.{CodeGenerator, DateTimeClass, GeneratorConfig, GeneratorTemplate, GeneratorTestTemplate, LineBreak, Model, ReturnCollectionType, Table}
+import scalikejdbc.mapper._
 
 import scala.collection.JavaConverters
 import scala.language.reflectiveCalls
+import scala.util.Try
 import scala.util.control.Exception._
-import org.grimrose.gradle.scalikejdbc.interop
-import org.grimrose.gradle.scalikejdbc.util.MergeProperties.ResolvePropertiesConflict
 
 /**
  * ScalikeJDBC Mapper Generator
@@ -46,13 +48,119 @@ class ScalikeJDBCMapperGenerator {
   import ScalikeJDBCMapperGenerator._
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def resolveSettings(jdbcConfig: interop.JdbcConfig,
+  private def resolveSettings(
+                      getPropertiesFile: Project => Properties)(
+                      project: Project,
+                      jdbcConfig: interop.JdbcConfig,
                       generatorConfig: interop.GeneratorConfig,
-                      propertyPath: Option[File],
                       loadPropertiesSetting: LoadPropertiesSetting):
     (JDBCSettings, GeneratorSettings) = {
 
-    
+    def mergedConfigs: Properties =
+      ToProperties.mergeConfigs(jdbcConfig, generatorConfig)
+
+    val resolvedProperties: Properties =
+      MergeProperties.apply(
+        loadPropertiesSetting.resolvePropertiesConflict)(
+        mergedConfigs,
+        getPropertiesFile(project))
+
+    settingsFromProperties(resolvedProperties)
+  }
+
+  def resolveSettings: (Project,
+                        interop.JdbcConfig,
+                        interop.GeneratorConfig,
+                        LoadPropertiesSetting) =>
+                       (JDBCSettings, GeneratorSettings) =
+    resolveSettings((project: Project) =>
+      loadAllProperties(project, DefaultPropertyPaths.all))
+
+  /**
+   *
+   * @param project
+   * @param loadFrom paths to .properties files,
+   *                 in order from highest -> lowest priority
+   * @return
+   */
+  private def loadAllProperties(project: Project,
+                                loadFrom: Seq[String]): Properties = {
+
+    def load(from: File): Properties = {
+      val props = new Properties()
+      using(new java.io.FileInputStream(from)) {
+        inputStream => props.load(inputStream)
+      }
+      props
+    }
+
+    def get(at: String): Option[Properties] = {
+      Try(project.file(at)).toOption match {
+        case Some(found) =>
+          Option(found)
+            .filter(x => x.exists() && x.isFile)
+            .map(load)
+        case None => {
+          logger.debug(s"Could not find properties file at $at")
+          None
+        }
+      }
+    }
+
+    val start: Properties = new Properties()
+    loadFrom.foldLeft(start) {
+      case (acc, thisLoc) => {
+        //if we can't find the file,
+        //merge using an empty properties object
+        val loadedProperties = get(thisLoc).getOrElse(new Properties())
+        MergeProperties.apply(PreferLeft)(acc, loadedProperties)
+      }
+    }
+  }
+
+  def settingsFromProperties(props: Properties): (JDBCSettings, GeneratorSettings) = {
+    CheckKey.checkKeys(props)
+
+    val defaultConfig = GeneratorConfig()
+    def getString = ScalikeJDBCMapperGenerator.getString(props) _
+
+    import Keys._
+    lazy val generatorSettings: GeneratorSettings = GeneratorSettings(
+      packageName = getString(PACKAGE_NAME).getOrElse(defaultConfig.packageName),
+      template = getString(TEMPLATE).getOrElse(defaultConfig.template.name),
+      testTemplate = getString(TEST_TEMPLATE).getOrElse(GeneratorTestTemplate.specs2unit.name),
+      lineBreak = getString(LINE_BREAK).getOrElse(defaultConfig.lineBreak.name),
+      encoding = getString(ENCODING).getOrElse(defaultConfig.encoding),
+      autoConstruct = getString(AUTO_CONSTRUCT).map(_.toBoolean).getOrElse(defaultConfig.autoConstruct),
+      defaultAutoSession = getString(DEFAULT_AUTO_SESSION).map(_.toBoolean).getOrElse(defaultConfig.defaultAutoSession),
+      dateTimeClass = getString(DATETIME_CLASS).map {
+        name => dateTimeClassMap.getOrElse(name, sys.error("does not support " + name))
+      }.getOrElse(defaultConfig.dateTimeClass),
+      defaultConfig.tableNameToClassName,
+      defaultConfig.columnNameToFieldName,
+      returnCollectionType = getString(RETURN_COLLECTION_TYPE).map { name =>
+        returnCollectionTypeMap.getOrElse(
+          name.toLowerCase(en),
+          sys.error(s"does not support $name. " +
+            s"Supported types are ${returnCollectionTypeMap.keys.mkString(", ")}"))
+      }.getOrElse(defaultConfig.returnCollectionType),
+      view = getString(VIEW).map(_.toBoolean).getOrElse(defaultConfig.view),
+      tableNamesToSkip = getString(TABLE_NAMES_TO_SKIP).map(_.split(",").toList).getOrElse(defaultConfig.tableNamesToSkip),
+      baseTypes = commaSeparated(props, BASE_TYPES),
+      companionBaseTypes = commaSeparated(props, COMPANION_BASE_TYPES),
+      tableNameToSyntaxName = defaultConfig.tableNameToSyntaxName,
+      tableNameToSyntaxVariableName = defaultConfig.tableNameToSyntaxVariableName)
+
+    lazy val jdbcSettings = JDBCSettings(
+      driver = getString(JDBC_DRIVER)
+        .getOrElse(throw new MapperGeneratorConfigException(s"Add $JDBC_DRIVER to project/scalikejdbc-mapper-generator.properties")),
+      url = getString(JDBC_URL)
+        .getOrElse(throw new MapperGeneratorConfigException(s"Add $JDBC_URL to project/scalikejdbc-mapper-generator.properties")),
+      username = getString(JDBC_USER_NAME).getOrElse(""),
+      password = getString(JDBC_PASSWORD).getOrElse(""),
+      schema = getString(JDBC_SCHEMA).orNull[String])
+
+    (jdbcSettings, generatorSettings)
   }
 
   //TODO: get the file using project.file()
@@ -242,6 +350,19 @@ class ScalikeJDBCMapperGenerator {
 }
 
 object ScalikeJDBCMapperGenerator {
+  /**
+   * relative to the project directory
+   */
+  object DefaultPropertyPaths {
+    val mapperGeneratorProperties: String =
+      "project" + File.pathSeparator + "scalikejdbc-mapper-generator.properties"
+
+    val scalikejdbcProperties: String =
+      "project" + File.pathSeparator + "scalikejdbc.properties"
+
+    val all: Seq[String] = Seq(mapperGeneratorProperties, scalikejdbcProperties)
+  }
+
    object Keys {
      private final val JDBC = "jdbc."
      final val JDBC_DRIVER = JDBC + "driver"
@@ -362,6 +483,8 @@ object ScalikeJDBCMapperGenerator {
     def resolvePropertiesConflict: ResolvePropertiesConflict
   }
   object LoadPropertiesSetting {
+    def default: LoadPropertiesSetting = PreferGradle
+
     case object PreferGradle extends LoadPropertiesSetting {
       override def resolvePropertiesConflict: ResolvePropertiesConflict =
         ResolvePropertiesConflict.PreferLeft

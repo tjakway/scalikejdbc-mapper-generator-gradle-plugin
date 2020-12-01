@@ -4,7 +4,7 @@ import java.util.Properties
 import java.util.Collection
 import java.util.{Optional => JOptional}
 
-import org.grimrose.gradle.scalikejdbc.util.Util
+import org.grimrose.gradle.scalikejdbc.util.{MergeProperties, Util}
 
 import scala.collection.JavaConverters
 
@@ -87,5 +87,15 @@ object ToProperties {
       private def filter(x: String): Option[String] =
         Option(x).filter(_.trim.nonEmpty)
     }
+  }
+
+  def mergeConfigs(jdbcConfig: JdbcConfig,
+                   generatorConfig: GeneratorConfig): Properties = {
+    //shouldn't have conflicting keys since we statically defined our maps
+    MergeProperties.apply(
+      MergeProperties.ResolvePropertiesConflict.throwException)(
+      JdbcConfig.toProperties(jdbcConfig),
+      GeneratorConfig.toProperties(generatorConfig)
+    )
   }
 }
