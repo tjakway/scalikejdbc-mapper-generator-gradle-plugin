@@ -7,8 +7,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.collection.JavaConverters
 
 object Util {
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
-
   private def callToString[A]: A => String = (a: A) => a.toString
   def joinWithSeparator[A](xs: Iterable[A],
                            separator: String,
@@ -39,8 +37,12 @@ object Util {
   }
 
   def joinWithSeparator[A](xs: java.util.Collection[A],
+                           separator: String): String =
+    joinWithSeparator(xs, separator, callToString[A])
+
+  def joinWithSeparator[A](xs: java.util.Collection[A],
                            separator: String,
-                           printF: A => String = callToString): String = {
+                           printF: A => String): String = {
     val iterable: Iterable[A] =
       JavaConverters.asScalaIterator(xs.iterator()).toIterable
     joinWithSeparator(iterable, separator, printF)
