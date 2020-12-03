@@ -44,7 +44,10 @@ import scala.util.control.Exception._
  *
  * @see scalikejdbc.mapper.SbtPlugin
  */
-class ScalikeJDBCMapperGenerator {
+class ScalikeJDBCMapperGenerator(val onPropertiesFilePermissionError:
+                                   String => Unit =
+                                 ScalikeJDBCMapperGenerator
+                                   .throwOnPropertiesFilePermissionError) {
   import ScalikeJDBCMapperGenerator._
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -68,24 +71,25 @@ class ScalikeJDBCMapperGenerator {
     settingsFromProperties(resolvedProperties)
   }
 
-  def resolveSettings: (Project,
-                        interop.JdbcConfig,
-                        interop.GeneratorConfig,
-                        LoadPropertiesSetting) =>
-                       (JDBCSettings, GeneratorSettings) =
+  type ResolveSettingsF = (Project,
+    interop.JdbcConfig,
+    interop.GeneratorConfig,
+    LoadPropertiesSetting) =>
+    (JDBCSettings, GeneratorSettings)
+
+  /**
+   * resolve settings using default .properties file paths
+   * @return
+   */
+  def resolveSettingsWithDefaultPaths: ResolveSettingsF =
     resolveSettings((project: Project) =>
       loadAllProperties(project, DefaultPropertyPaths.all))
 
-  /**
-   *
-   * @param project
-   * @param loadFrom paths to .properties files,
-   *                 in order from highest -> lowest priority
-   * @return
-   */
-  private def loadAllProperties(project: Project,
-                                loadFrom: Seq[String]): Properties = {
+  def resolveSettingsWithPropertyFiles(
+    usePropertyFiles: Seq[File]): ResolveSettingsF =
+    resolveSettings((ignored: Project) => loadAllProperties(usePropertyFiles))
 
+  private def loadAllProperties(loadFrom: Seq[File]): Properties = {
     def load(from: File): Properties = {
       val props = new Properties()
       using(new java.io.FileInputStream(from)) {
@@ -94,14 +98,32 @@ class ScalikeJDBCMapperGenerator {
       props
     }
 
-    def get(at: String): Option[Properties] = {
-      Try(project.file(at)).toOption match {
-        case Some(found) =>
-          Option(found)
-            .filter(x => x.exists() && x.isFile)
+    def checkAttrs(f: File): Option[File] = {
+      val x = Option(f).filter(n => n.exists && n.isFile)
+
+      x.foreach { n =>
+        if(!n.canRead) {
+          val msg: String =
+            s"${f} exists and is a file but cannot be read (check permissions)"
+          onPropertiesFilePermissionError(msg)
+        }
+      }
+
+      x.filter(_.canRead)
+    }
+
+    def getProperties(g: File): Option[Properties] = {
+      val optF = Option(g)
+      optF match {
+        case Some(f) =>
+          Option(f)
+            .flatMap(checkAttrs)
             .map(load)
         case None => {
-          logger.debug(s"Could not find properties file at $at")
+          val optFStr: String =
+            optF.map(_.getAbsolutePath).getOrElse("< null path >")
+          logger.debug(
+            s"Could not find properties file at $optFStr")
           None
         }
       }
@@ -112,10 +134,23 @@ class ScalikeJDBCMapperGenerator {
       case (acc, thisLoc) => {
         //if we can't find the file,
         //merge using an empty properties object
-        val loadedProperties = get(thisLoc).getOrElse(new Properties())
+        val loadedProperties = getProperties(thisLoc)
+          .getOrElse(new Properties())
         MergeProperties.apply(PreferLeft)(acc, loadedProperties)
       }
     }
+  }
+
+  /**
+   *
+   * @param project
+   * @param loadFrom paths to .properties files,
+   *                 in order from highest -> lowest priority
+   * @return
+   */
+  private def loadAllProperties(project: Project,
+                                loadFrom: Seq[String]): Properties = {
+    loadAllProperties(loadFrom.map(project.file))
   }
 
   def settingsFromProperties(props: Properties): (JDBCSettings, GeneratorSettings) = {
@@ -306,12 +341,12 @@ class ScalikeJDBCMapperGenerator {
       }
   }
 
-  private def allTables(includeViews: Boolean,
+  protected def allTables(includeViews: Boolean,
                         jdbc: JDBCSettings): Seq[Table] = {
     allTables(includeViews, jdbc, Model(jdbc.url, jdbc.username, jdbc.password))
   }
 
-  private def allTables(includeViews: Boolean,
+  protected def allTables(includeViews: Boolean,
                         jdbc: JDBCSettings,
                         model: Model): Seq[Table] = {
 
@@ -346,10 +381,11 @@ class ScalikeJDBCMapperGenerator {
   def using[R <: {def close()}, A](resource: R)(f: R => A): A = ultimately {
     ignoring(classOf[Throwable]) apply resource.close()
   } apply f(resource)
-
 }
 
 object ScalikeJDBCMapperGenerator {
+  private lazy val logger: Logger = LoggerFactory.getLogger(getClass)
+
   /**
    * relative to the project directory
    */
@@ -514,4 +550,15 @@ object ScalikeJDBCMapperGenerator {
     extends MapperGeneratorConfigException(
       String.format("User asserted no duplicates between " +
         "gradle-defined settings and mapper property files\n%s", conflictMsg))
+
+  case class PropertiesFilePermissionException(override val msg: String)
+    extends MapperException(msg)
+
+  def throwOnPropertiesFilePermissionError: String => Unit = { msg =>
+    throw PropertiesFilePermissionException(msg)
+  }
+
+  def logOnPropertiesFilePermissionError: String => Unit = { msg =>
+    logger.error(msg)
+  }
 }
