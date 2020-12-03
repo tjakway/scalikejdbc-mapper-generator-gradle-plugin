@@ -22,7 +22,7 @@ class GenTask extends DefaultTask {
   var className: String = _
 
   @TaskAction
-  def process() = {
+  def process(): Unit = {
     val adopter = ScalikeJDBCMapperGeneratorAdopter(getProject)
 
     val gen = adopter.loadGenerator(getName, getTableName, Option(getClassName), srcDir, testDir)
@@ -32,19 +32,19 @@ class GenTask extends DefaultTask {
     }
   }
 
-  def getTableName = this.tableName
+  def getTableName: String = this.tableName
 
-  def setTableName(tableName: String) = this.tableName = tableName
+  def setTableName(tableName: String): Unit = this.tableName = tableName
 
-  def getClassName = this.className
+  def getClassName: String = this.className
 
-  def setClassName(className: String) = this.className = className
+  def setClassName(className: String): Unit = this.className = className
 
-  def getSrcDir = this.srcDir
+  def getSrcDir: File = this.srcDir
 
-  def setSrcDir(srcDir: File) = this.srcDir = srcDir
+  def setSrcDir(srcDir: File): Unit = this.srcDir = srcDir
 
-  def getTestDir = this.testDir
+  def getTestDir: File = this.testDir
 
-  def setTestDir(testDir: File) = this.testDir = testDir
+  def setTestDir(testDir: File): Unit = this.testDir = testDir
 }
