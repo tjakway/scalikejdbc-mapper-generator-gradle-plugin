@@ -20,23 +20,21 @@
  */
 package org.grimrose.gradle.scalikejdbc.mapper
 
-import java.io.{File, FileNotFoundException}
-import java.util.Locale.{ENGLISH => en}
-import java.util.Properties
-import java.util.regex.Pattern
-
 import org.gradle.api.Project
-import org.grimrose.gradle.scalikejdbc.{MapperException, interop}
 import org.grimrose.gradle.scalikejdbc.interop.ToProperties
 import org.grimrose.gradle.scalikejdbc.util.MergeProperties.ResolvePropertiesConflict
 import org.grimrose.gradle.scalikejdbc.util.MergeProperties.ResolvePropertiesConflict.PreferLeft
 import org.grimrose.gradle.scalikejdbc.util.{MergeProperties, Util}
+import org.grimrose.gradle.scalikejdbc.{MapperException, interop}
 import org.slf4j.{Logger, LoggerFactory}
 import scalikejdbc.mapper._
 
+import java.io.{File, FileNotFoundException}
+import java.util.Locale.{ENGLISH => en}
+import java.util.Properties
+import java.util.regex.Pattern
 import scala.collection.JavaConverters
 import scala.language.reflectiveCalls
-import scala.util.Try
 import scala.util.control.Exception._
 
 /**
