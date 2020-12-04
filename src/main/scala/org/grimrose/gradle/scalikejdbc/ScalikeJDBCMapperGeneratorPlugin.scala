@@ -63,8 +63,8 @@ object ScalikeJDBCMapperGeneratorPlugin {
   object Keys {
     val taskGroup: String = "ScalikeJDBC Mapper Generator"
 
-    val tableName: String = "tableName"
-    val className: String = "className"
+    final val tableName = "tableName"
+    final val className = "className"
 
     object TaskNames {
       val prefix: String = "scalikejdbc"

@@ -1,16 +1,16 @@
 package org.grimrose.gradle.scalikejdbc
 
-import org.gradle.api.{InvalidUserDataException, Project}
+import org.gradle.api.Project
 import org.grimrose.gradle.scalikejdbc.mapper.ScalikeJDBCMapperGenerator
 import org.grimrose.gradle.scalikejdbc.tasks.ScalikejdbcConfigTask
 import scalikejdbc.mapper.CodeGenerator
 
 import java.io.File
-import scala.util.control.Exception._
 
 
 class ScalikeJDBCMapperGeneratorAdopter(project: Project) {
   import ScalikeJDBCMapperGeneratorAdopter._
+
   import scala.collection.JavaConverters._
 
   val generator = new ScalikeJDBCMapperGenerator
