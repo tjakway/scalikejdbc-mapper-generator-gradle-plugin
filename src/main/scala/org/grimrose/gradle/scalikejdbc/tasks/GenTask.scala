@@ -1,6 +1,7 @@
 package org.grimrose.gradle.scalikejdbc.tasks
 
 import org.gradle.api.tasks.{OutputDirectory, TaskAction}
+import org.gradle.api.tasks.{Optional => GradleOptional}
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter.GetGeneratorFor
 import org.grimrose.gradle.scalikejdbc.util.Util
@@ -9,7 +10,7 @@ import java.io.File
 import java.util.{Optional => JOptional}
 
 abstract class GenTask extends ScalikejdbcConfigTask {
-
+  @GradleOptional
   @OutputDirectory
   var srcDir: JOptional[File] = JOptional.empty()
 
@@ -19,6 +20,7 @@ abstract class GenTask extends ScalikejdbcConfigTask {
   def setSrcDir(f: File): Unit = setSrcDir(JOptional.of(f))
   def getSrcDir(): JOptional[File] = srcDir
 
+  @GradleOptional
   @OutputDirectory
   var testDir: JOptional[File] = JOptional.empty()
 
