@@ -1,50 +1,46 @@
 package org.grimrose.gradle.scalikejdbc.tasks
 
-import java.io.File
-
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.{Input, Optional, OutputDirectory, TaskAction}
+import org.gradle.api.tasks.{OutputDirectory, TaskAction}
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter
+import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter.GetGeneratorFor
+import org.grimrose.gradle.scalikejdbc.util.Util
 
-class GenTask extends DefaultTask {
+import java.io.File
+import java.util.{Optional => JOptional}
+
+abstract class GenTask extends ScalikejdbcConfigTask {
 
   @OutputDirectory
-  var srcDir: File = _
+  var srcDir: JOptional[File] = JOptional.empty()
+
+  def setSrcDir(o: JOptional[File]): Unit = {
+    srcDir = o
+  }
+  def setSrcDir(f: File): Unit = setSrcDir(JOptional.of(f))
+  def getSrcDir(): JOptional[File] = srcDir
 
   @OutputDirectory
-  var testDir: File = _
+  var testDir: JOptional[File] = JOptional.empty()
 
-  @Input
-  var tableName: String = _
+  def setTestDir(o: JOptional[File]): Unit = {
+    testDir = o
+  }
+  def setTestDir(f: File): Unit = setTestDir(JOptional.of(f))
+  def getTestDir(): JOptional[File] = testDir
 
-  @Input
-  @Optional
-  var className: String = _
+  protected def getGeneratorFor: GetGeneratorFor
 
   @TaskAction
-  def process(): Unit = {
+  def process() = {
     val adopter = ScalikeJDBCMapperGeneratorAdopter(getProject)
 
-    val gen = adopter.loadGenerator(getName, getTableName, Option(getClassName), srcDir, testDir)
-    gen.foreach { g =>
-      g.writeModelIfNonexistentAndUnskippable()
-      g.writeSpecIfNotExist(g.specAll())
+    adopter.loadGen(
+      this,
+      getGeneratorFor,
+      Util.asScalaOption(srcDir),
+      Util.asScalaOption(testDir)).foreach { g =>
+        g.writeModelIfNonexistentAndUnskippable()
+        g.writeSpecIfNotExist(g.specAll())
     }
   }
-
-  def getTableName: String = this.tableName
-
-  def setTableName(tableName: String): Unit = this.tableName = tableName
-
-  def getClassName: String = this.className
-
-  def setClassName(className: String): Unit = this.className = className
-
-  def getSrcDir: File = this.srcDir
-
-  def setSrcDir(srcDir: File): Unit = this.srcDir = srcDir
-
-  def getTestDir: File = this.testDir
-
-  def setTestDir(testDir: File): Unit = this.testDir = testDir
 }
