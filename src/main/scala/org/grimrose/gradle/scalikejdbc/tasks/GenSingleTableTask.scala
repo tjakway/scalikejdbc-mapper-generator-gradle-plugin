@@ -23,7 +23,6 @@ abstract class GenSingleTableTask
     option = ScalikeJDBCMapperGeneratorPlugin.Keys.className,
     description = "name of the generated class (defaults to table name)")
   @Optional
-  @BeanProperty
   var className: JOptional[String] = JOptional.empty()
 
   def setClassName(s: String): Unit = JOptional.of(s)
