@@ -36,6 +36,10 @@ class ScalikejdbcConfigTask extends DefaultTask {
   @Input
   @BeanProperty
   var allowOverridingPropertyFiles: Boolean = true
+
+  @Input
+  @BeanProperty
+  var failOnPropertyFilePermissionError: Boolean = true
 }
 
 object ScalikejdbcConfigTask {

@@ -3,6 +3,7 @@ package org.grimrose.gradle.scalikejdbc
 import org.gradle.api.{InvalidUserDataException, Project}
 import org.grimrose.gradle.scalikejdbc.mapper.ScalikeJDBCMapperGenerator
 import org.grimrose.gradle.scalikejdbc.tasks.ScalikejdbcConfigTask
+import scalikejdbc.mapper.CodeGenerator
 
 import java.io.File
 import scala.util.control.Exception._
@@ -10,43 +11,15 @@ import scala.util.control.Exception._
 
 class ScalikeJDBCMapperGeneratorAdopter(project: Project) {
   import ScalikeJDBCMapperGeneratorAdopter._
-
   import scala.collection.JavaConverters._
 
   val generator = new ScalikeJDBCMapperGenerator
 
-  def loadSettings() = {
-    val path = targetOrDefaultDirectory("project", "project").getAbsolutePath
-    generator.loadSettings(path)
-  }
-
-  def loadGenerator(taskName: String, tableName: String, className: Option[String], srcDir: AnyRef, testDir: AnyRef) = {
-    if (Option(tableName).getOrElse("").isEmpty) {
-      val log = project.getLogger
-      log.error(s"Not a valid command: $taskName")
-      log.error(s"Usage: $taskName -PtableName=table_name (-PclassName=class_name)")
-      throw new InvalidUserDataException(s"$taskName: tableName is empty.")
-    }
-
-    val s = targetOrDefaultDirectory(srcDir, "src/main/scala")
-    val t = targetOrDefaultDirectory(testDir, "src/test/scala")
-
-    generator.generator(tableName, className, s, t, loadSettings._1, loadSettings._2)
-  }
-
-  def allGenerators(srcDir: AnyRef, testDir: AnyRef) = {
-    val s = targetOrDefaultDirectory(srcDir, "src/main/scala")
-    val t = targetOrDefaultDirectory(testDir, "src/test/scala")
-
-    generator.allGenerators(s, t, loadSettings._1, loadSettings._2)
-  }
-
-  def targetOrDefaultDirectory(target: AnyRef, defaultPath: String) = allCatch.opt(project.file(target)).getOrElse(project.file(defaultPath))
-
-
   def loadGen(scalikejdbcConfigTask: ScalikejdbcConfigTask,
+              getGeneratorFor: GetGeneratorFor,
               srcDir: Option[AnyRef],
-              testDir: Option[AnyRef]) = {
+              testDir: Option[AnyRef],
+              failOnPermissionError: Boolean = true): Seq[CodeGenerator] = {
     val resolvedSrcDir = getDir(srcDir, getDefaultSrcDir)
     val resolvedTestDir = getDir(testDir, getDefaultTestDir)
 
@@ -67,6 +40,23 @@ class ScalikeJDBCMapperGeneratorAdopter(project: Project) {
           .selectLoadPropertiesSetting(scalikejdbcConfigTask)
       )
 
+    val mkGen: ScalikeJDBCMapperGenerator = ScalikeJDBCMapperGenerator(
+      scalikejdbcConfigTask.failOnPropertyFilePermissionError)
+
+    import GetGeneratorFor._
+    getGeneratorFor match {
+      case Table(tableName, optClassName) => {
+        mkGen.generator(
+          tableName, optClassName,
+          resolvedSrcDir, resolvedTestDir,
+          jdbcSettings, generatorSettings).toSeq
+      }
+      case AllTables => {
+        mkGen.allGenerators(
+          resolvedSrcDir, resolvedTestDir,
+          jdbcSettings, generatorSettings)
+      }
+    }
 
   }
 
@@ -86,4 +76,11 @@ object ScalikeJDBCMapperGeneratorAdopter {
     project.file("src/main/scala")
   def getDefaultTestDir(project: Project): File =
     project.file("src/test/scala")
+
+  sealed trait GetGeneratorFor
+  object GetGeneratorFor {
+    case class Table(tableName: String, className: Option[String])
+      extends GetGeneratorFor
+    case object AllTables extends GetGeneratorFor
+  }
 }

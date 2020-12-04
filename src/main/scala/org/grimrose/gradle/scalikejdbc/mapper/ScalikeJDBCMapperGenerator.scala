@@ -384,6 +384,18 @@ class ScalikeJDBCMapperGenerator(val onPropertiesFilePermissionError:
 object ScalikeJDBCMapperGenerator {
   private lazy val logger: Logger = LoggerFactory.getLogger(getClass)
 
+  def apply(failOnPermissionError: Boolean = true):
+    ScalikeJDBCMapperGenerator = {
+    val selectF = {
+      if(failOnPermissionError) {
+        throwOnPropertiesFilePermissionError
+      } else {
+        logOnPropertiesFilePermissionError
+      }
+    }
+    new ScalikeJDBCMapperGenerator(selectF)
+  }
+
   /**
    * relative to the project directory
    */
