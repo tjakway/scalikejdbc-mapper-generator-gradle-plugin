@@ -7,68 +7,49 @@ import scala.collection.JavaConverters._
 import scala.language.existentials
 
 class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
+  import ScalikeJDBCMapperGeneratorPlugin.Keys._
 
-  val group = "ScalikeJDBC Mapper Generator"
+  //add tasks to the project
+  override def apply(project: Project): Unit = {
+    def mk[T <: Task](name: String)
+                     (configure: (T) => Unit)
+                     (implicit m: Manifest[T]): T = {
+      makeTask[T](project, name)(configure)(m)
+    }
 
-  var project: Project = _
-
-  override def apply(project: Project) = {
-    this.project = project
     // scalikejdbc-gen
-    makeTask[GenTask]("scalikejdbcGen") { task =>
+    mk[GenSingleTableTask](TaskNames.genSingleTableTask) { task =>
       task.setDescription("Generates a model for a specified table")
-
-      task.setSrcDir(project.file("src/main/scala"))
-      task.setTestDir(project.file("src/test/scala"))
-
-      task.setTableName(findProperty("tableName"))
-      task.setClassName(findProperty("className"))
     }
 
     // scalikejdbc-gen-force
-    makeTask[GenForceTask]("scalikejdbcGenForce") { task =>
-      task.setDescription("Generates and overwrites a model for a specified table")
-
-      task.setSrcDir(project.file("src/main/scala"))
-      task.setTestDir(project.file("src/test/scala"))
-
-      task.setTableName(findProperty("tableName"))
-      task.setClassName(findProperty("className"))
+    mk[GenForceTask](TaskNames.genAllForceTask) { task =>
+      task.setDescription("Generates and overwrites " +
+        "a model for a specified table")
     }
 
     // scalikejdbc-gen-all
-    makeTask[GenAllTask]("scalikejdbcGenAll") { task =>
+    mk[GenAllTask](TaskNames.genAllTask) { task =>
       task.setDescription("Generates models for all tables")
-
-      task.setSrcDir(project.file("src/main/scala"))
-      task.setTestDir(project.file("src/test/scala"))
     }
 
     // scalikejdbc-gen-all-force
-    makeTask[GenAllForceTask]("scalikejdbcGenAllForce") { task =>
+    mk[GenAllForceTask](TaskNames.genAllForceTask) { task =>
       task.setDescription("Generates and overwrites models for all tables")
-
-      task.setSrcDir(project.file("src/main/scala"))
-      task.setTestDir(project.file("src/test/scala"))
     }
 
     // scalikejdbc-gen-echo
-    makeTask[GenEchoTask]("scalikejdbcGenEcho") { task =>
+    mk[GenEchoTask](TaskNames.genEchoTask) { task =>
       task.setDescription("Prints a model for a specified table")
-
-      task.setSrcDir(project.file("src/main/scala"))
-      task.setTestDir(project.file("src/test/scala"))
-
-      task.setTableName(findProperty("tableName"))
-      task.setClassName(findProperty("className"))
     }
   }
-  def makeTask[T <: Task](name: String)(configure: (T) => Unit)(implicit m: Manifest[T]): T = makeTask[T](this.project, name)(configure)(m)
 
-  def makeTask[T <: Task](project: Project, name: String)(configure: (T) => Unit)(implicit m: Manifest[T]): T = {
+  def makeTask[T <: Task](p: Project, name: String)
+                         (configure: (T) => Unit)
+                         (implicit m: Manifest[T]): T = {
     val map = Map("type" -> m.runtimeClass)
-    val t = project.task(map.asJava, name).asInstanceOf[T]
-    t.setGroup(group)
+    val t = p.task(map.asJava, name).asInstanceOf[T]
+    t.setGroup(ScalikeJDBCMapperGeneratorPlugin.Keys.taskGroup)
     configure(t)
     t
   }
@@ -76,23 +57,19 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
 
 object ScalikeJDBCMapperGeneratorPlugin {
   object Keys {
+    val taskGroup: String = "ScalikeJDBC Mapper Generator"
+
     val tableName: String = "tableName"
     val className: String = "className"
 
-    val all: Set[String] = Set(tableName, className)
-  }
-
-  def genSingleTableKeys: Set[String] = Keys.all
-  def genAllKeys: Set[String] = Set.empty
-
-  class Properties(val project: Project) {
-    def findProperty(key: String) : String = findProperty(project, key) match {
-      case Some(x) => x.toString
-      case None => null
+    object TaskNames {
+      val prefix: String = "scalikejdbc"
+      val genSingleTableTask: String = prefix + "Gen"
+      val genSingleTableForceTask: String = genSingleTableTask + "Force"
+      val genAllTask: String = prefix + "GenAll"
+      val genAllForceTask: String = genAllTask + "Force"
+      val genEchoTask: String = prefix + "GenEcho"
+      val genEchoAllTask: String = genEchoTask + "All"
     }
-
-    private def findProperty(p: Project, key: String): Option[Any] =
-      p.getProperties.asScala.get(key)
-
   }
 }
