@@ -72,4 +72,8 @@ object Util {
     }
   }
 
+  def asJavaOptional[A](x: Option[A]): JOptional[A] = x match {
+    case Some(a) => JOptional.of(a)
+    case None => JOptional.empty()
+  }
 }
