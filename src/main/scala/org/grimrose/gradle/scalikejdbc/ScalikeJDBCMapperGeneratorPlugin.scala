@@ -63,14 +63,6 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
       task.setClassName(findProperty("className"))
     }
   }
-
-  def findProperty(key: String) : String = findProperty(this.project, key) match {
-    case Some(x) => x.toString
-    case None => null
-  }
-
-  def findProperty(p: Project, key: String): Option[Any] = p.getProperties.asScala.get(key)
-
   def makeTask[T <: Task](name: String)(configure: (T) => Unit)(implicit m: Manifest[T]): T = makeTask[T](this.project, name)(configure)(m)
 
   def makeTask[T <: Task](project: Project, name: String)(configure: (T) => Unit)(implicit m: Manifest[T]): T = {
@@ -80,5 +72,27 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
     configure(t)
     t
   }
+}
 
+object ScalikeJDBCMapperGeneratorPlugin {
+  object Keys {
+    val tableName: String = "tableName"
+    val className: String = "className"
+
+    val all: Set[String] = Set(tableName, className)
+  }
+
+  def genSingleTableKeys: Set[String] = Keys.all
+  def genAllKeys: Set[String] = Set.empty
+
+  class Properties(val project: Project) {
+    def findProperty(key: String) : String = findProperty(project, key) match {
+      case Some(x) => x.toString
+      case None => null
+    }
+
+    private def findProperty(p: Project, key: String): Option[Any] =
+      p.getProperties.asScala.get(key)
+
+  }
 }
