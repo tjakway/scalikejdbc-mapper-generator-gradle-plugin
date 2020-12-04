@@ -39,14 +39,6 @@ trait ToProperties[A] {
 }
 
 object ToProperties {
-  private def asScalaOption[A](x: JOptional[A]): Option[A] = {
-    if(x.isPresent) {
-      Some(x.get())
-    } else {
-      None
-    }
-  }
-
   sealed trait PropertyValue {
     def renderPropertyValue: Option[String]
   }
@@ -58,7 +50,7 @@ object ToProperties {
     }
     object OptionalPropertyValue {
       def apply[A](value: JOptional[A]): OptionalPropertyValue[A] =
-        OptionalPropertyValue(asScalaOption(value))
+        OptionalPropertyValue(Util.asScalaOption(value))
     }
 
     case class Collection[A](coll: java.util.Collection[A])

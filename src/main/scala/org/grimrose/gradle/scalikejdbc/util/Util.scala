@@ -1,8 +1,7 @@
 package org.grimrose.gradle.scalikejdbc.util
 
 import java.util.Properties
-
-import org.slf4j.{Logger, LoggerFactory}
+import java.util.{Optional => JOptional}
 
 import scala.collection.JavaConverters
 
@@ -64,4 +63,13 @@ object Util {
 
     props
   }
+
+  def asScalaOption[A](x: JOptional[A]): Option[A] = {
+    if(x.isPresent) {
+      Some(x.get())
+    } else {
+      None
+    }
+  }
+
 }
