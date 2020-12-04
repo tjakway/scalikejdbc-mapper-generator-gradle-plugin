@@ -18,7 +18,7 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
     }
 
     // scalikejdbc-gen
-    mk[GenSingleTableTask](TaskNames.genSingleTableTask) { task =>
+    mk[GenSingleTableWriteTask](TaskNames.genSingleTableTask) { task =>
       task.setDescription("Generates a model for a specified table")
     }
 
@@ -29,7 +29,7 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
     }
 
     // scalikejdbc-gen-all
-    mk[GenAllTask](TaskNames.genAllTask) { task =>
+    mk[GenAllWriteTask](TaskNames.genAllTask) { task =>
       task.setDescription("Generates models for all tables")
     }
 
