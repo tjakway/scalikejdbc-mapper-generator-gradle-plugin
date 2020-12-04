@@ -23,7 +23,7 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
     }
 
     // scalikejdbc-gen-force
-    mk[GenForceTask](TaskNames.genAllForceTask) { task =>
+    mk[GenForceTask](TaskNames.genSingleTableForceTask) { task =>
       task.setDescription("Generates and overwrites " +
         "a model for a specified table")
     }
