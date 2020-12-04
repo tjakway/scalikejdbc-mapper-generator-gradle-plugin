@@ -1,5 +1,5 @@
 package org.grimrose.gradle.scalikejdbc.tasks
 
-class GenForceTask
+class GenSingleTableWriteTask
   extends GenSingleTableTask
-    with GenTask.ForceWriteTables
+    with GenTask.WriteTables

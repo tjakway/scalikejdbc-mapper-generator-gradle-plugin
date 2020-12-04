@@ -39,8 +39,12 @@ class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
     }
 
     // scalikejdbc-gen-echo
-    mk[GenEchoTask](TaskNames.genEchoTask) { task =>
+    mk[GenSingleTableEchoTask](TaskNames.genEchoTask) { task =>
       task.setDescription("Prints a model for a specified table")
+    }
+
+    mk[GenAllEchoTask](TaskNames.genEchoAllTask) { task =>
+      task.setDescription("Prints models for all tables")
     }
   }
 

@@ -9,7 +9,8 @@ import org.grimrose.gradle.scalikejdbc.util.Util
 import java.util.{Optional => JOptional}
 import scala.beans.BeanProperty
 
-class GenSingleTableTask extends GenTask {
+abstract class GenSingleTableTask
+  extends GenTask {
   @Input
   @GradleOption(
     option = ScalikeJDBCMapperGeneratorPlugin.Keys.tableName,
