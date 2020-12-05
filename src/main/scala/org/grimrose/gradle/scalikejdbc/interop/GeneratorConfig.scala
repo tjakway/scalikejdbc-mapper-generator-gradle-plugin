@@ -7,7 +7,7 @@ import org.grimrose.gradle.scalikejdbc.interop.ToProperties.PropertyValue
 
 import scala.beans.BeanProperty
 
-class GeneratorConfig {
+class GeneratorConfig extends Serializable {
   @BeanProperty
   @Input
   @Optional
@@ -63,6 +63,10 @@ class GeneratorConfig {
 
   //TODO: add fields for tableNameToSyntaxName and tableNameToSyntaxVariableName
   //and add support in ScalikeJDBCMapperGenerator.Keys
+
+  override def toString: String = {
+    getClass.getName + "(" + GeneratorConfig.toAnnotatedMap(this) + ")"
+  }
 }
 
 object GeneratorConfig extends ToProperties[GeneratorConfig] {

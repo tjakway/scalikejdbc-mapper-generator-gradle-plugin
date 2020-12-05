@@ -4,7 +4,7 @@ import org.gradle.api.tasks.Input
 
 import scala.beans.BeanProperty
 
-class JdbcConfig {
+class JdbcConfig extends Serializable {
   @BeanProperty
   @Input
   var driver: String = _
@@ -20,6 +20,10 @@ class JdbcConfig {
   @BeanProperty
   @Input
   var schema: String = _
+
+  override def toString: String = {
+    getClass.getName + "(" + JdbcConfig.toAnnotatedMap(this) + ")"
+  }
 }
 
 object JdbcConfig extends ToProperties[JdbcConfig] {
