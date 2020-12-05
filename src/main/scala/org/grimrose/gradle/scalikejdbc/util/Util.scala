@@ -76,4 +76,7 @@ object Util {
     case Some(a) => JOptional.of(a)
     case None => JOptional.empty()
   }
+
+  def optionalString(x: String): Option[String] =
+    Option(x).filter(_.trim.nonEmpty)
 }

@@ -49,8 +49,12 @@ object ToProperties {
       override def renderPropertyValue: Option[String] = value.map(_.toString)
     }
     object OptionalPropertyValue {
-      def apply[A](value: JOptional[A]): OptionalPropertyValue[A] =
+      def apply[A](value: JOptional[A]): OptionalPropertyValue[A] = {
         OptionalPropertyValue(Util.asScalaOption(value))
+      }
+
+      def apply[A](value: A): OptionalPropertyValue[A] =
+        apply(Option(value))
     }
 
     case class Collection[A](coll: java.util.Collection[A])

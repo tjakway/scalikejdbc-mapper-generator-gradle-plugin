@@ -29,7 +29,7 @@ import org.grimrose.gradle.scalikejdbc.{MapperException, interop}
 import org.slf4j.{Logger, LoggerFactory}
 import scalikejdbc.mapper._
 
-import java.io.{File, FileNotFoundException}
+import java.io.File
 import java.util.Locale.{ENGLISH => en}
 import java.util.Properties
 import java.util.regex.Pattern
@@ -196,70 +196,6 @@ class ScalikeJDBCMapperGenerator(val onPropertiesFilePermissionError:
     (jdbcSettings, generatorSettings)
   }
 
-  //TODO: get the file using project.file()
-  def loadSettings(projectDirectoryPath: String): (JDBCSettings, GeneratorSettings) = {
-    val props = new Properties()
-    try {
-      val file: File = new File(projectDirectoryPath, "scalikejdbc-mapper-generator.properties")
-      println(file.getAbsolutePath)
-      using(new java.io.FileInputStream(file)) {
-        inputStream => props.load(inputStream)
-      }
-    } catch {
-      case e: FileNotFoundException =>
-    }
-    if (props.isEmpty) {
-      val file: File = new File(projectDirectoryPath, "scalikejdbc.properties")
-      println(file.getAbsolutePath)
-      using(new java.io.FileInputStream(file)) {
-        inputStream => props.load(inputStream)
-      }
-    }
-
-    CheckKey.checkKeys(props)
-
-    val defaultConfig = GeneratorConfig()
-    def getString = ScalikeJDBCMapperGenerator.getString(props) _
-
-    import Keys._
-    lazy val generatorSettings: GeneratorSettings = GeneratorSettings(
-      packageName = getString(PACKAGE_NAME).getOrElse(defaultConfig.packageName),
-      template = getString(TEMPLATE).getOrElse(defaultConfig.template.name),
-      testTemplate = getString(TEST_TEMPLATE).getOrElse(GeneratorTestTemplate.specs2unit.name),
-      lineBreak = getString(LINE_BREAK).getOrElse(defaultConfig.lineBreak.name),
-      encoding = getString(ENCODING).getOrElse(defaultConfig.encoding),
-      autoConstruct = getString(AUTO_CONSTRUCT).map(_.toBoolean).getOrElse(defaultConfig.autoConstruct),
-      defaultAutoSession = getString(DEFAULT_AUTO_SESSION).map(_.toBoolean).getOrElse(defaultConfig.defaultAutoSession),
-      dateTimeClass = getString(DATETIME_CLASS).map {
-        name => dateTimeClassMap.getOrElse(name, sys.error("does not support " + name))
-      }.getOrElse(defaultConfig.dateTimeClass),
-      defaultConfig.tableNameToClassName,
-      defaultConfig.columnNameToFieldName,
-      returnCollectionType = getString(RETURN_COLLECTION_TYPE).map { name =>
-        returnCollectionTypeMap.getOrElse(
-          name.toLowerCase(en),
-          sys.error(s"does not support $name. " +
-            s"Supported types are ${returnCollectionTypeMap.keys.mkString(", ")}"))
-      }.getOrElse(defaultConfig.returnCollectionType),
-      view = getString(VIEW).map(_.toBoolean).getOrElse(defaultConfig.view),
-      tableNamesToSkip = getString(TABLE_NAMES_TO_SKIP).map(_.split(",").toList).getOrElse(defaultConfig.tableNamesToSkip),
-      baseTypes = commaSeparated(props, BASE_TYPES),
-      companionBaseTypes = commaSeparated(props, COMPANION_BASE_TYPES),
-      tableNameToSyntaxName = defaultConfig.tableNameToSyntaxName,
-      tableNameToSyntaxVariableName = defaultConfig.tableNameToSyntaxVariableName)
-
-    lazy val jdbcSettings = JDBCSettings(
-        driver = getString(JDBC_DRIVER)
-          .getOrElse(throw new MapperGeneratorConfigException(s"Add $JDBC_DRIVER to project/scalikejdbc-mapper-generator.properties")),
-        url = getString(JDBC_URL)
-          .getOrElse(throw new MapperGeneratorConfigException(s"Add $JDBC_URL to project/scalikejdbc-mapper-generator.properties")),
-        username = getString(JDBC_USER_NAME).getOrElse(""),
-        password = getString(JDBC_PASSWORD).getOrElse(""),
-        schema = getString(JDBC_SCHEMA).orNull[String])
-
-    (jdbcSettings, generatorSettings)
-  }
-
   def generatorConfig(srcDir: File, testDir: File, generatorSettings: GeneratorSettings): GeneratorConfig =
     GeneratorConfig(
       srcDir = srcDir.getAbsolutePath,
@@ -400,11 +336,12 @@ object ScalikeJDBCMapperGenerator {
    * relative to the project directory
    */
   object DefaultPropertyPaths {
-    val mapperGeneratorProperties: String =
-      "project" + File.pathSeparator + "scalikejdbc-mapper-generator.properties"
+    val mapperGeneratorProperties: String = {
+      "project" + File.separator + "scalikejdbc-mapper-generator.properties"
+    }
 
     val scalikejdbcProperties: String =
-      "project" + File.pathSeparator + "scalikejdbc.properties"
+      "project" + File.separator + "scalikejdbc.properties"
 
     val all: Seq[String] = Seq(mapperGeneratorProperties, scalikejdbcProperties)
   }

@@ -17,8 +17,8 @@ class ScalikeJDBCMapperGeneratorAdopter(project: Project) {
 
   def loadGen(scalikejdbcConfigTask: ScalikejdbcConfigTask,
               getGeneratorFor: GetGeneratorFor,
-              srcDir: Option[AnyRef],
-              testDir: Option[AnyRef],
+              srcDir: Option[String],
+              testDir: Option[String],
               failOnPermissionError: Boolean = true): Seq[CodeGenerator] = {
     val resolvedSrcDir = getDir(srcDir, getDefaultSrcDir)
     val resolvedTestDir = getDir(testDir, getDefaultTestDir)
@@ -60,8 +60,8 @@ class ScalikeJDBCMapperGeneratorAdopter(project: Project) {
 
   }
 
-  private def getDir(in: Option[AnyRef], getDefaultLoc: Project => File): File = {
-    in.map(_.toString).filter(_.trim.isEmpty).map(project.file) match {
+  private def getDir(in: Option[String], getDefaultLoc: Project => File): File = {
+    in.filter(_.trim.isEmpty).map(project.file) match {
       case Some(found) => found
       case None => getDefaultLoc(project)
     }

@@ -1,6 +1,6 @@
 package org.grimrose.gradle.scalikejdbc.interop
 
-import java.util.{ArrayList, Collection, Optional => JOptional}
+import java.util.{ArrayList, Collection}
 
 import org.gradle.api.tasks.{Input, Optional}
 import org.grimrose.gradle.scalikejdbc.interop.ToProperties.PropertyValue
@@ -8,6 +8,8 @@ import org.grimrose.gradle.scalikejdbc.interop.ToProperties.PropertyValue
 import scala.beans.BeanProperty
 
 class GeneratorConfig extends Serializable {
+  //note: can't make fields optional because it's not serializable
+  //see https://stackoverflow.com/questions/24547673/why-java-util-optional-is-not-serializable-how-to-serialize-the-object-with-suc
   @BeanProperty
   @Input
   @Optional
@@ -31,11 +33,11 @@ class GeneratorConfig extends Serializable {
   @BeanProperty
   @Input
   @Optional
-  var autoConstruct: JOptional[Boolean] = JOptional.empty()
+  var autoConstruct: java.lang.Boolean = null
   @BeanProperty
   @Input
   @Optional
-  var defaultAutoSession: JOptional[Boolean] = JOptional.empty()
+  var defaultAutoSession: java.lang.Boolean = null
   @BeanProperty
   @Input
   @Optional
@@ -47,7 +49,7 @@ class GeneratorConfig extends Serializable {
   @BeanProperty
   @Input
   @Optional
-  var view: JOptional[Boolean] = JOptional.empty()
+  var view: java.lang.Boolean = null
   @BeanProperty
   @Input
   @Optional

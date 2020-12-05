@@ -1,35 +1,23 @@
 package org.grimrose.gradle.scalikejdbc.tasks
 
-import org.gradle.api.tasks.{OutputDirectory, TaskAction}
-import org.gradle.api.tasks.{Optional => GradleOptional}
+import org.gradle.api.tasks.{OutputDirectory, TaskAction, Optional => GradleOptional}
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter.GetGeneratorFor
 import org.grimrose.gradle.scalikejdbc.util.Util
 import scalikejdbc.mapper.CodeGenerator
 
-import java.io.File
-import java.util.{Optional => JOptional}
+import scala.beans.BeanProperty
 
 abstract class GenTask extends ScalikejdbcConfigTask {
   @GradleOptional
+  @BeanProperty
   @OutputDirectory
-  var srcDir: JOptional[File] = JOptional.empty()
-
-  def setSrcDir(o: JOptional[File]): Unit = {
-    srcDir = o
-  }
-  def setSrcDir(f: File): Unit = setSrcDir(JOptional.of(f))
-  def getSrcDir(): JOptional[File] = srcDir
+  var srcDir: String = _
 
   @GradleOptional
+  @BeanProperty
   @OutputDirectory
-  var testDir: JOptional[File] = JOptional.empty()
-
-  def setTestDir(o: JOptional[File]): Unit = {
-    testDir = o
-  }
-  def setTestDir(f: File): Unit = setTestDir(JOptional.of(f))
-  def getTestDir(): JOptional[File] = testDir
+  var testDir: String = _
 
   protected def getGeneratorFor: GetGeneratorFor
 
@@ -42,8 +30,8 @@ abstract class GenTask extends ScalikejdbcConfigTask {
     adopter.loadGen(
       this,
       getGeneratorFor,
-      Util.asScalaOption(srcDir),
-      Util.asScalaOption(testDir)).foreach { g =>
+      Util.optionalString(srcDir),
+      Util.optionalString(testDir)).foreach { g =>
       handleCodeGenerator(g)
     }
   }

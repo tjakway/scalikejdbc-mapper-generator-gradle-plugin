@@ -1,12 +1,11 @@
 package org.grimrose.gradle.scalikejdbc.tasks
 
-import org.gradle.api.tasks.{Input, Optional}
 import org.gradle.api.tasks.options.{Option => GradleOption}
+import org.gradle.api.tasks.{Input, Optional}
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorAdopter.GetGeneratorFor
 import org.grimrose.gradle.scalikejdbc.ScalikeJDBCMapperGeneratorPlugin
 import org.grimrose.gradle.scalikejdbc.util.Util
 
-import java.util.{Optional => JOptional}
 import scala.beans.BeanProperty
 
 abstract class GenSingleTableTask
@@ -23,14 +22,9 @@ abstract class GenSingleTableTask
     option = ScalikeJDBCMapperGeneratorPlugin.Keys.className,
     description = "name of the generated class (defaults to table name)")
   @Optional
-  var className: JOptional[String] = JOptional.empty()
-
-  def setClassName(s: String): Unit = JOptional.of(s)
-  def setClassName(x: JOptional[String]): Unit = {
-    className = x
-  }
-  def getClassName(): JOptional[String] = className
+  @BeanProperty
+  var className: String = _
 
   override protected def getGeneratorFor: GetGeneratorFor =
-    GetGeneratorFor.Table(tableName, Util.asScalaOption(className))
+    GetGeneratorFor.Table(tableName, Util.optionalString(className))
 }
