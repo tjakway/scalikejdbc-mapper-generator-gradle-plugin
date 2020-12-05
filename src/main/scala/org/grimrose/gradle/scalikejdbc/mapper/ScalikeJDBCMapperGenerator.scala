@@ -34,8 +34,6 @@ import java.util.Locale.{ENGLISH => en}
 import java.util.Properties
 import java.util.regex.Pattern
 import scala.collection.JavaConverters
-import scala.language.reflectiveCalls
-import scala.util.control.Exception._
 
 /**
  * ScalikeJDBC Mapper Generator
