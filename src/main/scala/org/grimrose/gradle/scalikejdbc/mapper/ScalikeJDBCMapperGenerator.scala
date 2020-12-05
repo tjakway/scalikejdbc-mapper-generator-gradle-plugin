@@ -90,7 +90,7 @@ class ScalikeJDBCMapperGenerator(val onPropertiesFilePermissionError:
   private def loadAllProperties(loadFrom: Seq[File]): Properties = {
     def load(from: File): Properties = {
       val props = new Properties()
-      using(new java.io.FileInputStream(from)) {
+      Util.using(new java.io.FileInputStream(from)) {
         inputStream => props.load(inputStream)
       }
       props
@@ -311,10 +311,6 @@ class ScalikeJDBCMapperGenerator(val onPropertiesFilePermissionError:
       new CodeGenerator(table, className)(config)
     }
   }
-
-  def using[R <: {def close()}, A](resource: R)(f: R => A): A = ultimately {
-    ignoring(classOf[Throwable]) apply resource.close()
-  } apply f(resource)
 }
 
 object ScalikeJDBCMapperGenerator {
