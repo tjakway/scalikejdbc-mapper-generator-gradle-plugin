@@ -7,55 +7,52 @@ import scala.collection.JavaConverters._
 import scala.language.existentials
 
 class ScalikeJDBCMapperGeneratorPlugin extends Plugin[Project] {
-  import ScalikeJDBCMapperGeneratorPlugin.Keys._
+  import ScalikeJDBCMapperGeneratorPlugin._
 
   //add tasks to the project
   override def apply(project: Project): Unit = {
-    def mk[T <: Task](name: String)
-                     (configure: (T) => Unit)
-                     (implicit m: Manifest[T]): T = {
-      makeTask[T](project, name)(configure)(m)
-    }
+    val makeTask: MakeTask = new MakeTask(project)
 
     // scalikejdbc-gen
-    mk[GenSingleTableWriteTask](TaskNames.genSingleTableTask) { task =>
-      task.setDescription("Generates a model for a specified table")
-    }
+    makeTask[GenSingleTableWriteTask](TaskInfo.genSingleTableTask)
 
     // scalikejdbc-gen-force
-    mk[GenForceTask](TaskNames.genSingleTableForceTask) { task =>
-      task.setDescription("Generates and overwrites " +
-        "a model for a specified table")
-    }
+    makeTask[GenForceTask](TaskInfo.genSingleTableForceTask)
 
     // scalikejdbc-gen-all
-    mk[GenAllWriteTask](TaskNames.genAllTask) { task =>
-      task.setDescription("Generates models for all tables")
-    }
+    makeTask[GenAllWriteTask](TaskInfo.genAllTask)
 
     // scalikejdbc-gen-all-force
-    mk[GenAllForceTask](TaskNames.genAllForceTask) { task =>
-      task.setDescription("Generates and overwrites models for all tables")
-    }
+    makeTask[GenAllForceTask](TaskInfo.genAllForceTask)
 
     // scalikejdbc-gen-echo
-    mk[GenSingleTableEchoTask](TaskNames.genEchoTask) { task =>
-      task.setDescription("Prints a model for a specified table")
-    }
+    makeTask[GenSingleTableEchoTask](TaskInfo.genEchoTask)
 
-    mk[GenAllEchoTask](TaskNames.genEchoAllTask) { task =>
-      task.setDescription("Prints models for all tables")
-    }
+    // new task not present in scalikejdbc: scalikejdbcGenEchoAll
+    // trivial to implement and convenient
+    makeTask[GenAllEchoTask](TaskInfo.genEchoAllTask)
   }
 
-  def makeTask[T <: Task](p: Project, name: String)
-                         (configure: (T) => Unit)
-                         (implicit m: Manifest[T]): T = {
-    val map = Map("type" -> m.runtimeClass)
-    val t = p.task(map.asJava, name).asInstanceOf[T]
-    t.setGroup(ScalikeJDBCMapperGeneratorPlugin.Keys.taskGroup)
-    configure(t)
-    t
+  private class MakeTask(val project: Project) {
+    def apply[T <: Task](taskInfo: TaskInfo)
+                     (implicit m: Manifest[T]): T = {
+
+      def configure: (T) => Unit = { task =>
+        task.setDescription(taskInfo.description)
+      }
+
+      makeTask[T](project, taskInfo.name)(configure)(m)
+    }
+
+    private def makeTask[T <: Task](p: Project, name: String)
+                           (configure: (T) => Unit)
+                           (implicit m: Manifest[T]): T = {
+      val map = Map("type" -> m.runtimeClass)
+      val t = p.task(map.asJava, name).asInstanceOf[T]
+      t.setGroup(ScalikeJDBCMapperGeneratorPlugin.Keys.taskGroup)
+      configure(t)
+      t
+    }
   }
 }
 
@@ -65,15 +62,38 @@ object ScalikeJDBCMapperGeneratorPlugin {
 
     final val tableName = "tableName"
     final val className = "className"
+  }
 
-    object TaskNames {
-      val prefix: String = "scalikejdbc"
-      val genSingleTableTask: String = prefix + "Gen"
-      val genSingleTableForceTask: String = genSingleTableTask + "Force"
-      val genAllTask: String = prefix + "GenAll"
-      val genAllForceTask: String = genAllTask + "Force"
-      val genEchoTask: String = prefix + "GenEcho"
-      val genEchoAllTask: String = genEchoTask + "All"
-    }
+  case class TaskInfo(name: String, description: String)
+  object TaskInfo {
+    private val prefix: String = "scalikejdbc"
+
+    val genSingleTableTask: TaskInfo =
+      TaskInfo(prefix + "Gen", "Generates a model for a specified table")
+
+    val genSingleTableForceTask: TaskInfo =
+      TaskInfo(genSingleTableTask + "Force", "Generates and overwrites " +
+        "a model for a specified table")
+
+    val genAllTask: TaskInfo =
+      TaskInfo(prefix + "GenAll", "Generates models for all tables")
+
+    val genAllForceTask: TaskInfo =
+      TaskInfo(genAllTask + "Force",
+        "Generates and overwrites models for all tables")
+
+    val genEchoTask: TaskInfo =
+      TaskInfo(prefix + "GenEcho", "Prints a model for a specified table")
+
+    val genEchoAllTask: TaskInfo =
+      TaskInfo(genEchoTask + "All", "Prints models for all tables")
+
+    val all: Set[TaskInfo] = Set(
+      genSingleTableTask,
+      genSingleTableForceTask,
+      genAllTask,
+      genAllForceTask,
+      genEchoTask,
+      genEchoAllTask)
   }
 }
