@@ -10,6 +10,7 @@ import org.scalatestplus.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ScalikeJDBCMapperGeneratorSpec extends AnyFlatSpec with Matchers {
 
+  /*
   "ScalikeJDBCMapperGenerator" should "load properties file" in {
     val resource = getClass.getResource("/scalikejdbc.properties")
     val file = Paths.get(resource.toURI)
@@ -34,6 +35,5 @@ class ScalikeJDBCMapperGeneratorSpec extends AnyFlatSpec with Matchers {
     generator.autoConstruct should be(false)
     generator.defaultAutoSession should be(true)
   }
-
-
+   */
 }
