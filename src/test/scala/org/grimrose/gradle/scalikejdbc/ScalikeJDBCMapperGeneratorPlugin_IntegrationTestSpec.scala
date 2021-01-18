@@ -17,6 +17,22 @@ import scala.util.control.Exception._
 @RunWith(classOf[JUnitRunner])
 class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec with Matchers {
 
+  //TODO: look up scalikeJDBC types
+  trait Test {
+    val tablesToColumns: Map[String, Set[String]]
+    val mkTableString: String
+
+    def checkGeneratedClass(classDef: String)
+  }
+
+  class RunTest(val test: Test) {
+    def setupDatabase(): Unit = {
+
+    }
+  }
+
+
+  /*
   describe("scalikejdbcGenEcho") {
     ignore("should echo") {
       withTempDirectory { tmp =>
@@ -339,4 +355,6 @@ class ScalikeJDBCMapperGeneratorPlugin_IntegrationTestSpec extends AnyFunSpec wi
     //    println(Source.fromFile(buildScript.toFile, "UTF-8").mkString)
   }
 
+
+   */
 }

@@ -10,6 +10,9 @@ repositories {
 
 dependencies {
     implementation gradleApi()
+    //for programmatically testing gradle plugins
+    //see https://docs.gradle.org/nightly/userguide/test_kit.html
+    testImplementation gradleTestKit()
 
     implementation "org.scala-lang:scala-library:$scalaFullVersion"
 
@@ -30,7 +33,7 @@ dependencies {
 }
 
 tasks.withType(ScalaCompile) {
-    scalaCompileOptions.additionalParameters = ["-feature", "-Xlint", "-language:_", "-deprecation", "-unchecked", "-Xfatal-warnings"]
+    scalaCompileOptions.additionalParameters = ["-feature", "-Xlint", "-language:_", "-deprecation", "-unchecked"]
 }
 
 test {

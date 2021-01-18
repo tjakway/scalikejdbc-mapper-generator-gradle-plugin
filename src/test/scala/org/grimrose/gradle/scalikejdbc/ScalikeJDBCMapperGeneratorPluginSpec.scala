@@ -13,34 +13,14 @@ import org.scalatest.matchers.should.Matchers
 class ScalikeJDBCMapperGeneratorPluginSpec
   extends AnyFlatSpec
     with Matchers
-    with WithTempDir {
-
-  val pluginPackage: String = "org.grimrose.gradle.scalikejdbc"
-
-  private def jMap[K, V](xs: Seq[(K, V)]): java.util.Map[K, V] = {
-    import scala.collection.JavaConverters
-    JavaConverters.mapAsJavaMap(xs.toMap)
-  }
-  private def jMap[K, V](x: (K, V)): java.util.Map[K, V] = {
-    jMap(Seq(x))
-  }
-
-  private def mkTaskTest(project: Project)
-                        (taskInfo: TaskInfo): Unit = {
-    "The project" should s"have task ${taskInfo.name}" in {
-      val task = project.getTasks.findByName(taskInfo.name)
-      task should not(be(null))
-      task.getDescription shouldEqual taskInfo.description
-      task shouldBe a[ScalikejdbcConfigTask]
-    }
-  }
+    with WithTempDir
+    with TestUtil
+    with TestTasks {
 
   private def testTasks(): Unit = {
     val project = ProjectBuilder.builder().build()
 
-    project.apply(jMap("plugin" -> pluginPackage))
-    ScalikeJDBCMapperGeneratorPlugin
-      .TaskInfo.all.foreach(mkTaskTest(project))
+    testTasks(project)
   }
 
   testTasks()

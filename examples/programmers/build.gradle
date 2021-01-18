@@ -58,3 +58,9 @@ task run(dependsOn: classes, type: JavaExec) {
     ignoreExitValue = false
     workingDir = rootProject.projectDir
 }
+
+task fooBar(type: org.grimrose.gradle.scalikejdbc.tasks.ScalikejdbcConfigTask) {
+    jdbcConfig.driver = "foobarDriver"
+    
+    generatorConfig.view = java.util.Optional.of(true)
+}
