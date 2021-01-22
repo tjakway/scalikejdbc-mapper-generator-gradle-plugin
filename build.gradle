@@ -25,6 +25,7 @@ dependencies {
     testImplementation "org.scalatest:scalatest_$scalaVersion:$scalatestVersion"
     testImplementation "org.scalactic:scalactic_$scalaVersion:$scalatestVersion"
     testImplementation "org.scalatestplus:junit-4-13_$scalaVersion:$scalatestJunitVersion"
+    testImplementation "org.scalacheck:scalacheck_$scalaVersion:$scalacheckVersion"
 
     testImplementation "junit:junit:$junitVersion"
 
