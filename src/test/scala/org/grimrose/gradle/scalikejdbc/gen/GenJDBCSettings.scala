@@ -27,8 +27,8 @@ trait GenJDBCSettings {
   protected def genPassword: Gen[String]
   protected def genSchema: Gen[String]
 
-  def genJDBCSettings(availableDrivers: TestSettings.DriverMap)
-                     (dbLoc: File): Gen[JDBCSettings] = {
+  final def genJDBCSettings(availableDrivers: TestSettings.DriverMap)
+                           (dbLoc: File): Gen[JDBCSettings] = {
     for {
       (driver, driverPrefix) <- genDriver(availableDrivers)
       url <- genFileUrl(driverPrefix, dbLoc)
