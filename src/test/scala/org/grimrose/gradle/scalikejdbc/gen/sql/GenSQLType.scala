@@ -1,12 +1,12 @@
 package org.grimrose.gradle.scalikejdbc.gen.sql
 
-case class GenSQLType(
+case class SQLType(
    sqlTypeName: String,
    allowedScalaTypes: Set[String])
 
-object GenSQLType {
-  def apply(sqlTypeName: String, allowedScalaType: String): GenSQLType =
-    GenSQLType(sqlTypeName, Set(allowedScalaType))
+object SQLType {
+  def apply(sqlTypeName: String, allowedScalaType: String): SQLType =
+    SQLType(sqlTypeName, Set(allowedScalaType))
 
   private object ScalaTypes {
     val intTypes: Set[String] =
@@ -21,12 +21,12 @@ object GenSQLType {
   object CommonTypes {
     import ScalaTypes._
 
-    case object Decimal extends GenSQLType("DECIMAL", floatingTypes)
+    case object Decimal extends SQLType("DECIMAL", floatingTypes)
 
-    case object Integer extends GenSQLType("INTEGER", intTypes)
-    case object Int extends GenSQLType("INT", intTypes)
+    case object Integer extends SQLType("INTEGER", intTypes)
+    case object Int extends SQLType("INT", intTypes)
 
-    case object Text extends GenSQLType("TEXT", textTypes)
-    case class VarChar(max: Int) extends GenSQLType(s"VARCHAR($max)", textTypes)
+    case object Text extends SQLType("TEXT", textTypes)
+    case class VarChar(max: Int) extends SQLType(s"VARCHAR($max)", textTypes)
   }
 }
