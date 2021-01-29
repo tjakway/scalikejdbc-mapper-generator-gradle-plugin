@@ -1,7 +1,6 @@
 package org.grimrose.gradle.scalikejdbc.gen
 
 import org.grimrose.gradle.scalikejdbc.TestSettings
-import org.grimrose.gradle.scalikejdbc.gen.GenSettings.genOptionalString
 import org.grimrose.gradle.scalikejdbc.mapper.JDBCSettings
 import org.scalacheck.Gen
 
@@ -49,21 +48,13 @@ object GenJDBCSettings {
     xs.reduce(mergeUrlComponents)
   }
 
-  trait GenStandardSettings extends GenJDBCSettings {
-    //a Gen[String] that can't start with a number
-    private def genAlphaStartingStr: Gen[String] =  {
-      def f = for {
-        firstChar <- Gen.alphaChar
-        rest <- Gen.alphaNumStr
-      } yield {
-        firstChar + rest
-      }
-      genOptionalString(f)
-    }
-
-    override protected def genUsername: Gen[String] = genAlphaStartingStr
-    override protected def genPassword: Gen[String] = Gen.alphaNumStr
-    override protected def genSchema: Gen[String] = genAlphaStartingStr
+  trait GenStandardSettings extends GenJDBCSettings with GenCommon {
+    override protected def genUsername: Gen[String] =
+      GenCommon.optional("")(genIdentifier)
+    override protected def genPassword: Gen[String] =
+      GenCommon.optional("")(Gen.alphaNumStr)
+    override protected def genSchema: Gen[String] =
+      GenCommon.optional("")(genIdentifier)
   }
 
   /**
