@@ -1,12 +1,12 @@
 package org.grimrose.gradle.scalikejdbc.gen.sql
 
-case class SQLType(
-   sqlTypeName: String,
-   allowedScalaTypes: Set[String])
+class SQLType(
+   val sqlTypeName: String,
+   val allowedScalaTypes: Set[String])
 
 object SQLType {
   def apply(sqlTypeName: String, allowedScalaType: String): SQLType =
-    SQLType(sqlTypeName, Set(allowedScalaType))
+    new SQLType(sqlTypeName, Set(allowedScalaType))
 
   private object ScalaTypes {
     val intTypes: Set[String] =
