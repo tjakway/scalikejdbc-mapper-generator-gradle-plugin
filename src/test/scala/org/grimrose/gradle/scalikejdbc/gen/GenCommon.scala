@@ -28,7 +28,17 @@ trait GenCommon {
         }
       }
 
-      res.map(_._2)
+      res.map {
+        case (chosenIndices, acc) => {
+          //sanity checks
+          assert(chosenIndices == xs.indices.toSet)
+          assert(acc.size == xs.size)
+          assert(acc.forall(xs.contains))
+          assert(xs.forall(acc.contains))
+
+          acc
+        }
+      }
     }
   }
 
