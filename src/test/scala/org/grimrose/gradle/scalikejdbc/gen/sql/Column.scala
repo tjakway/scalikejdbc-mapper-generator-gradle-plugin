@@ -1,5 +1,8 @@
 package org.grimrose.gradle.scalikejdbc.gen.sql
 
+import org.grimrose.gradle.scalikejdbc.gen.GenCommon
+import org.scalacheck.Gen
+
 case class Column(name: String,
                   sqlType: SQLType,
                   modifiers: Set[ColumnModifier]) {
@@ -28,5 +31,28 @@ case class Column(name: String,
       //trim will remove leading or trailing spaces resulting from
       //prepending and appending empty sets of modifiers
     ).trim
+  }
+}
+
+object Column {
+  def idColumn(driver: SQLDriver): Column = Column(
+    "id",
+    SQLType.CommonTypes.Integer,
+    Set(ColumnModifier.PrimaryKey, driver.getAutoincrementModifier)
+  )
+
+  def gen(driver: SQLDriver): Gen[Column] = {
+    for {
+      name <- GenCommon.genIdentifier
+      sqlType <- Gen.oneOf(driver.sqlTypes.toSeq)
+      modifiers <- ColumnModifier.gen(driver)
+    } yield {
+      Column(name, sqlType, modifiers)
+    }
+  }
+
+  def genColumns(driver: SQLDriver): Gen[Seq[Column]] = {
+    val genIdColumn: Gen[Option[Column]] = Gen.option(idColumn(driver))
+
   }
 }

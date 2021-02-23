@@ -1,5 +1,8 @@
 package org.grimrose.gradle.scalikejdbc.gen.sql
 
-case class SQLDriver(driverClass: String,
-                     jdbcPrefix: String,
-                     sqlTypes: Set[SQLType])
+abstract class SQLDriver(val driverClass: String,
+                         val jdbcPrefix: String,
+                         val sqlTypes: Set[SQLType],
+                         val modifiers: Set[ColumnModifier]) {
+  def getAutoincrementModifier: ColumnModifier
+}
