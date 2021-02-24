@@ -52,7 +52,16 @@ object Column {
   }
 
   def genColumns(driver: SQLDriver): Gen[Seq[Column]] = {
-    val genIdColumn: Gen[Option[Column]] = Gen.option(idColumn(driver))
-
+    Gen.option(idColumn(driver)).flatMap { optIdColumn =>
+      Gen.listOf(gen(driver)).flatMap { columns =>
+        optIdColumn match {
+          case Some(id) => {
+            val allColumns = id :: columns
+            GenCommon.shuffle(allColumns)
+          }
+          case None => Gen.const(columns)
+        }
+      }
+    }
   }
 }

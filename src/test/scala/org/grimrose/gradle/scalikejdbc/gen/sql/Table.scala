@@ -1,5 +1,6 @@
 package org.grimrose.gradle.scalikejdbc.gen.sql
 
+import org.grimrose.gradle.scalikejdbc.gen.GenCommon
 import org.scalacheck.Gen
 
 import java.util.regex.Pattern
@@ -38,11 +39,15 @@ object Table {
 
 
   def gen(driver: SQLDriver): Gen[Table] = {
-
+    for {
+      name <- GenCommon.genIdentifier
+      columns <- Column.genColumns(driver)
+    } yield {
+      Table(name, columns)
+    }
   }
 
-
-  private object Check {
+  object CheckCreateTableStatement {
     private val checkRegexStr: String = """"""
     private lazy val checkRegex: Either[Throwable, Pattern] = {
       Try(Pattern.compile(checkRegexStr, Pattern.MULTILINE)) match {
