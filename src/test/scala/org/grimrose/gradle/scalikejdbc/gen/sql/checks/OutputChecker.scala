@@ -5,43 +5,57 @@ import org.grimrose.gradle.scalikejdbc.gen.sql.GenSQLException
 import java.io.File
 
 trait OutputChecker {
-  def apply(buildDir: File): OutputChecker.OutputCheckerResult
+  def apply(buildDir: File): OutputChecker.Result
 }
 
 object OutputChecker {
-  import OutputCheckerResult.{WarningType, ErrorType}
-  case class OutputCheckerResult(
-      errors: Map[OutputChecker, Seq[ErrorType]],
-      warnings: Map[OutputChecker, Seq[WarningType]]) {
+  import Result.{WarningType, ErrorType}
+  trait Result
+    extends Result.ErrorType {
+    def errors: Map[OutputChecker, Seq[ErrorType]]
+    def warnings: Map[OutputChecker, Seq[WarningType]]
 
     //could refactor this to take getters & setters as parameters
     //to avoid duplicating code between addWarnings and addErrors,
     //but the added complexity is not worth it for 2 small methods
     def addWarnings(checker: OutputChecker,
-                    toAdd: Seq[WarningType]): OutputCheckerResult = {
-      val existing = warnings.getOrElse(checker, Seq.empty)
-      val newWarnings = warnings.updated(checker, existing ++ toAdd)
-      copy(warnings = newWarnings)
-    }
+                    toAdd: Seq[WarningType]): Result
 
     def addErrors(checker: OutputChecker,
-                  toAdd: Seq[ErrorType]): OutputCheckerResult = {
-      val existing = errors.getOrElse(checker, Seq.empty)
-      val newErrors = errors.updated(checker, existing ++ toAdd)
-      copy(errors = newErrors)
-    }
+                  toAdd: Seq[ErrorType]): Result
 
     def noWarnings: Boolean = warnings.isEmpty
     def noErrors: Boolean = errors.isEmpty
 
-    def combine(other: OutputCheckerResult): OutputCheckerResult = {
-      OutputCheckerResult.combine(this, other)
+    def combine(other: Result): Result = {
+      Result.combine(this, other)
     }
   }
 
-  object OutputCheckerResult {
-    type ErrorType = GenSQLException
+  object Result {
+    type ErrorType = Throwable
     type WarningType = Throwable
+
+    private case class ResultGroup(
+        errors: Map[OutputChecker, Seq[ErrorType]],
+        warnings: Map[OutputChecker, Seq[WarningType]]) extends Result {
+      //could refactor this to take getters & setters as parameters
+      //to avoid duplicating code between addWarnings and addErrors,
+      //but the added complexity is not worth it for 2 small methods
+      def addWarnings(checker: OutputChecker,
+                      toAdd: Seq[WarningType]): Result = {
+        val existing = warnings.getOrElse(checker, Seq.empty)
+        val newWarnings = warnings.updated(checker, existing ++ toAdd)
+        copy(warnings = newWarnings)
+      }
+
+      def addErrors(checker: OutputChecker,
+                    toAdd: Seq[ErrorType]): Result = {
+        val existing = errors.getOrElse(checker, Seq.empty)
+        val newErrors = errors.updated(checker, existing ++ toAdd)
+        copy(errors = newErrors)
+      }
+    }
 
     private def mergeMaps[K, E](left: Map[K, Seq[E]],
                                 right: Map[K, Seq[E]]):
@@ -56,10 +70,10 @@ object OutputChecker {
       }
     }
 
-    def combine(left: OutputCheckerResult,
-                right: OutputCheckerResult): OutputCheckerResult = {
+    def combine(left: Result,
+                right: Result): Result = {
 
-      OutputCheckerResult(
+      Result(
         errors = mergeMaps(left.errors, right.errors),
         warnings = mergeMaps(left.warnings, right.warnings)
       )
