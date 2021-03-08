@@ -31,6 +31,9 @@ object OutputChecker {
       copy(errors = newErrors)
     }
 
+    def noWarnings: Boolean = warnings.isEmpty
+    def noErrors: Boolean = errors.isEmpty
+
     def combine(other: OutputCheckerResult): OutputCheckerResult = {
       OutputCheckerResult.combine(this, other)
     }
