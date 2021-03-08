@@ -40,7 +40,7 @@ object OutputChecker {
   }
 
   object Result {
-    type ErrorType = GenSQLException
+    type ErrorType = Throwable
     type WarningType = Throwable
 
     private def mergeMaps[K, E](left: Map[K, Seq[E]],
