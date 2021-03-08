@@ -5,12 +5,12 @@ import org.grimrose.gradle.scalikejdbc.gen.sql.GenSQLException
 import java.io.File
 
 trait OutputChecker {
-  def apply(buildDir: File): OutputChecker.OutputCheckerResult
+  def apply(buildDir: File): OutputChecker.Result
 }
 
 object OutputChecker {
-  import OutputCheckerResult.{WarningType, ErrorType}
-  case class OutputCheckerResult(
+  import Result.{WarningType, ErrorType}
+  case class Result(
       errors: Map[OutputChecker, Seq[ErrorType]],
       warnings: Map[OutputChecker, Seq[WarningType]]) {
 
@@ -18,14 +18,14 @@ object OutputChecker {
     //to avoid duplicating code between addWarnings and addErrors,
     //but the added complexity is not worth it for 2 small methods
     def addWarnings(checker: OutputChecker,
-                    toAdd: Seq[WarningType]): OutputCheckerResult = {
+                    toAdd: Seq[WarningType]): Result = {
       val existing = warnings.getOrElse(checker, Seq.empty)
       val newWarnings = warnings.updated(checker, existing ++ toAdd)
       copy(warnings = newWarnings)
     }
 
     def addErrors(checker: OutputChecker,
-                  toAdd: Seq[ErrorType]): OutputCheckerResult = {
+                  toAdd: Seq[ErrorType]): Result = {
       val existing = errors.getOrElse(checker, Seq.empty)
       val newErrors = errors.updated(checker, existing ++ toAdd)
       copy(errors = newErrors)
@@ -34,12 +34,12 @@ object OutputChecker {
     def noWarnings: Boolean = warnings.isEmpty
     def noErrors: Boolean = errors.isEmpty
 
-    def combine(other: OutputCheckerResult): OutputCheckerResult = {
-      OutputCheckerResult.combine(this, other)
+    def combine(other: Result): Result = {
+      Result.combine(this, other)
     }
   }
 
-  object OutputCheckerResult {
+  object Result {
     type ErrorType = GenSQLException
     type WarningType = Throwable
 
@@ -56,10 +56,10 @@ object OutputChecker {
       }
     }
 
-    def combine(left: OutputCheckerResult,
-                right: OutputCheckerResult): OutputCheckerResult = {
+    def combine(left: Result,
+                right: Result): Result = {
 
-      OutputCheckerResult(
+      Result(
         errors = mergeMaps(left.errors, right.errors),
         warnings = mergeMaps(left.warnings, right.warnings)
       )
