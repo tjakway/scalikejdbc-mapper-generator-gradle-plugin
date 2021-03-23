@@ -15,5 +15,6 @@ object TestSettings {
 
   object Constants {
     val pluginPackageName: String = "org.grimrose.gradle.scalikejdbc"
+    val encoding: String = "UTF-8"
   }
 }

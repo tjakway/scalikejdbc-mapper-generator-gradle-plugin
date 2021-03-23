@@ -10,9 +10,12 @@ abstract class RegexChecker
     with RegexChecker.MkCheckFunctions {
   import RegexChecker._
 
-  override def apply(buildDir: File): OutputChecker.Result = {
-    //TODO
-    ???
+  protected def checkFunction: CheckFunction
+
+  override def apply(buildDir: File): OutputChecker.Result = wrapExceptions {
+    checkFunction(OutputChecker.Result.empty)(
+      buildDir.getAbsolutePath)(
+    )
   }
 }
 

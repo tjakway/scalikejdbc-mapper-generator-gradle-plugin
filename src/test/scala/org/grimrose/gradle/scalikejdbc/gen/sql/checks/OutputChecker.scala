@@ -4,9 +4,21 @@ import org.grimrose.gradle.scalikejdbc.gen.sql.GenSQLException
 
 import java.io.File
 import java.util.Formatter
+import scala.util.{Try, Success, Failure}
 
 trait OutputChecker {
-  def apply(buildDir: File): OutputChecker.Result
+  import OutputChecker._
+  def apply(buildDir: File): Result
+
+  protected def wrapError(e: Result.ErrorType): Result =
+    ResultGroup(None, Map(this -> Seq(e)), Map.empty)
+
+  protected def wrapExceptions(f: => Result): Result = {
+    Try(f) match {
+      case Success(x) => x
+      case Failure(t) => wrapError(t)
+    }
+  }
 }
 
 object OutputChecker {
