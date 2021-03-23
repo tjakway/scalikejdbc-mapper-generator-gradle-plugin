@@ -11,39 +11,62 @@ trait OutputChecker {
 
 object OutputChecker {
   import Result.{WarningType, ErrorType}
-  case class Result(
-      header: Option[String],
-      errors: Map[OutputChecker, Seq[ErrorType]],
-      warnings: Map[OutputChecker, Seq[WarningType]]) {
 
+  trait Result {
     //could refactor this to take getters & setters as parameters
     //to avoid duplicating code between addWarnings and addErrors,
     //but the added complexity is not worth it for 2 small methods
     def addWarnings(checker: OutputChecker,
+                    toAdd: Seq[WarningType]): Result
+
+    def addErrors(checker: OutputChecker,
+                  toAdd: Seq[ErrorType]): Result
+
+    def noWarnings: Boolean
+    def noErrors: Boolean
+
+    def combine(other: Result): Result
+  }
+
+  private case class ResultGroup(
+      header: Option[String],
+      errors: Map[OutputChecker, Seq[ErrorType]],
+      warnings: Map[OutputChecker, Seq[WarningType]]) extends Result {
+
+    //could refactor this to take getters & setters as parameters
+    //to avoid duplicating code between addWarnings and addErrors,
+    //but the added complexity is not worth it for 2 small methods
+    override def addWarnings(checker: OutputChecker,
                     toAdd: Seq[WarningType]): Result = {
       val existing = warnings.getOrElse(checker, Seq.empty)
       val newWarnings = warnings.updated(checker, existing ++ toAdd)
       copy(warnings = newWarnings)
     }
 
-    def addErrors(checker: OutputChecker,
+    override def addErrors(checker: OutputChecker,
                   toAdd: Seq[ErrorType]): Result = {
       val existing = errors.getOrElse(checker, Seq.empty)
       val newErrors = errors.updated(checker, existing ++ toAdd)
       copy(errors = newErrors)
     }
 
-    def noWarnings: Boolean = warnings.isEmpty
-    def noErrors: Boolean = errors.isEmpty
+    override def noWarnings: Boolean = warnings.isEmpty
+    override def noErrors: Boolean = errors.isEmpty
 
-    def combine(other: Result): Result = {
-      Result.combine(this, other)
+    override def combine(other: Result): Result = {
+      ResultGroup(
+        mergeHeaders(left.header, right.header),
+        errors = mergeMaps(left.errors, right.errors),
+        warnings = mergeMaps(left.warnings, right.warnings)
+      )
     }
   }
 
   object Result {
     type ErrorType = Throwable
     type WarningType = Throwable
+
+    val empty: Result = ResultGroup(None, Map.empty, Map.empty)
 
     private def mergeMaps[K, E](left: Map[K, Seq[E]],
                                 right: Map[K, Seq[E]]):
@@ -87,14 +110,6 @@ object OutputChecker {
       }
     }
 
-    def combine(left: Result,
-                right: Result): Result = {
-      Result(
-        mergeHeaders(left.header, right.header),
-        errors = mergeMaps(left.errors, right.errors),
-        warnings = mergeMaps(left.warnings, right.warnings)
-      )
-    }
 
     private def mergeHeaders(left: Option[String],
                              right: Option[String]): Option[String] = {
