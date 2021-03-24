@@ -8,7 +8,7 @@ import scala.util.{Try, Success, Failure}
 
 trait OutputChecker {
   import OutputChecker._
-  def apply(buildDir: File): Result
+  def apply(file: File): Result
 
   protected def wrapError(e: Result.ErrorType): Result =
     ResultGroup(None, Map(this -> Seq(e)), Map.empty)

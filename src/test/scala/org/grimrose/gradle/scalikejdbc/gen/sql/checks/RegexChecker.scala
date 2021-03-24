@@ -1,5 +1,6 @@
 package org.grimrose.gradle.scalikejdbc.gen.sql.checks
 
+import org.grimrose.gradle.scalikejdbc.TestSettings
 import org.grimrose.gradle.scalikejdbc.gen.sql.checks
 
 import java.io.File
@@ -12,10 +13,22 @@ abstract class RegexChecker
 
   protected def checkFunction: CheckFunction
 
-  override def apply(buildDir: File): OutputChecker.Result = wrapExceptions {
+  override def apply(file: File): OutputChecker.Result = wrapExceptions {
+    def read(f: File): String = {
+      import scala.io.Source
+      var source: Option[Source] = None
+
+      try {
+        source = Some(scala.io.Source.fromFile(
+          f, TestSettings.Constants.encoding))
+        source.mkString
+      } finally {
+        source.foreach(_.close())
+      }
+    }
+
     checkFunction(OutputChecker.Result.empty)(
-      buildDir.getAbsolutePath)(
-    )
+      file.getAbsolutePath)(read(file))
   }
 }
 
