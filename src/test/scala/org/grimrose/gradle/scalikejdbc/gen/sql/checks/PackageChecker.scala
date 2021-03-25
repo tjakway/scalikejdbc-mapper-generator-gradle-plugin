@@ -36,7 +36,7 @@ case class PackageChecker(packageName: String)
   }
   import Regexes._
 
-  override protected def checkFunctions: Seq[CheckFunction] = Seq(
+  override protected lazy val checkFunctions: Seq[CheckFunction] = Seq(
     warnIfMatch(thinPackageHierarchy, ThinPackageHierarchy.apply),
     errorIfMatch(noPackageName, NoPackageName.apply),
     errorIfMatch(noPackageDecl, NoPackageDeclaration.apply)
