@@ -11,7 +11,7 @@ abstract class RegexChecker
     with RegexChecker.MkCheckFunctions {
   import RegexChecker._
 
-  protected def checkFunction: CheckFunction
+  protected def checkFunctions: Seq[CheckFunction]
 
   override def apply(file: File): OutputChecker.Result = wrapExceptions {
     def read(f: File): String = {
@@ -27,8 +27,15 @@ abstract class RegexChecker
       }
     }
 
-    checkFunction(OutputChecker.Result.empty)(
-      file.getAbsolutePath)(read(file))
+    lazy val fileContents: String = read(file)
+
+    checkFunctions.foldLeft(OutputChecker.Result.empty) {
+      case (acc, thisCheckFunction) => {
+
+        thisCheckFunction(acc)(
+          file.getAbsolutePath)(fileContents)
+      }
+    }
   }
 }
 
@@ -42,6 +49,18 @@ object RegexChecker {
   type ErrorF   = (Pattern, String => ErrorType)   => CheckFunction
 
   trait MkCheckFunctions { this: OutputChecker =>
+    protected def defaultRegexOptions: Int =
+      Pattern.DOTALL | Pattern.MULTILINE
+
+    /**
+     * so we don't forget to pass [[defaultRegexOptions]]
+     * @param str
+     * @param regexOptions
+     * @return
+     */
+    protected def compile(str: String,
+                          regexOptions: Int = defaultRegexOptions): Pattern =
+      Pattern.compile(str, defaultRegexOptions)
 
     /**
      *
