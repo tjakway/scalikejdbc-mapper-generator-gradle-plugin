@@ -49,19 +49,6 @@ object RegexChecker {
   type ErrorF   = (Pattern, String => ErrorType)   => CheckFunction
 
   trait MkCheckFunctions { this: OutputChecker =>
-    protected def defaultRegexOptions: Int =
-      Pattern.DOTALL | Pattern.MULTILINE
-
-    /**
-     * so we don't forget to pass [[defaultRegexOptions]]
-     * @param str
-     * @param regexOptions
-     * @return
-     */
-    protected def compile(str: String,
-                          regexOptions: Int = defaultRegexOptions): Pattern =
-      Pattern.compile(str, defaultRegexOptions)
-
     /**
      *
      * @param addInType

@@ -11,6 +11,9 @@ case class PackageChecker(packageName: String)
   import PackageChecker._
 
   private object Regexes extends RegexUtil {
+    private val flags: Int = Pattern.DOTALL | Pattern.MULTILINE
+    private def compile(x: String): Pattern = Pattern.compile(x, flags)
+
     private def mkPackageRegex(packageString: String): String = {
       String.format("""%s*(?!(%s|%s))package\s+%s\s*;?\R.*""",
         matchCommentOrWhitespace,
