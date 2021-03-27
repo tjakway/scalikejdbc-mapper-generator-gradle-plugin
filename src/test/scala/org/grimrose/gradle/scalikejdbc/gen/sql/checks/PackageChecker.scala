@@ -22,15 +22,15 @@ case class PackageChecker(packageName: String)
         packageString)
     }
 
-    val noPackageName: Pattern = compile(mkPackageRegex(""))
+    lazy val noPackageName: Pattern = compile(mkPackageRegex(""))
 
     /**
      * A package hierarchy of just 1 directory
      */
-    val thinPackageHierarchy: Pattern =
+    lazy val thinPackageHierarchy: Pattern =
       compile(mkPackageRegex("""\p{Alpha}[\p{Alnum}_]*"""))
 
-    val noPackageDecl: Pattern = {
+    lazy val noPackageDecl: Pattern = {
       val packageDeclRegex: String =
         mkPackageRegex("""\p{Alpha}(\p{Alnum}|(\\.|[\p{Alnum}_]))*""")
 
