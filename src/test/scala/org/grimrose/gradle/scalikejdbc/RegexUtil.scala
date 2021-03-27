@@ -1,6 +1,20 @@
 package org.grimrose.gradle.scalikejdbc
 
+import java.util.regex.Pattern
+
 trait RegexUtil {
+  protected def defaultFlags: Option[Int] = None
+  protected def compile(rgx: String,
+                        flags: Option[Int] = defaultFlags): Pattern = {
+    flags match {
+      case Some(f) => Pattern.compile(rgx, f)
+      case None => Pattern.compile(rgx)
+    }
+  }
+
+  protected def compile(rgx: String, flags: Int): Pattern =
+    compile(rgx, Some(flags))
+
   val matchSingleLineCommentDecl: String = """//"""
 
   val matchMultiLineCommentStart: String = """/\\*"""
