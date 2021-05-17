@@ -8,15 +8,16 @@ class CombinedChecker(val checkers: Set[OutputChecker])
   extends OutputChecker {
   import CombinedChecker._
   override def apply(buildDir: File): OutputChecker.Result = {
-
+    ??? //TODO
   }
 
   private def perScalaFile(f: File): OutputChecker.Result = {
     checkers.foldLeft(Map.empty: ResultMap) {
       case (acc, thisChecker) => {
-
+        ??? //TODO
       }
     }
+    ??? //TODO
   }
 }
 
