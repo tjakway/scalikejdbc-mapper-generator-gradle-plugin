@@ -50,7 +50,7 @@ object CombinedChecker {
     def update(thisChecker: OutputChecker,
                thisRes: OutputChecker.Result,
                target: String): SortedResults = {
-      def updateMapF = updateMap(thisChecker, thisRes, target)
+      def updateMapF = updateMap(thisChecker, thisRes, target) _
 
       if(passed(thisRes)) {
         copy(passed = updateMapF(passed))
