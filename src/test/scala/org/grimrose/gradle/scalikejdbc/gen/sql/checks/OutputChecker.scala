@@ -34,16 +34,21 @@ object OutputChecker {
     def addErrors(checker: OutputChecker,
                   toAdd: Seq[ErrorType]): Result
 
-    def noWarnings: Boolean
-    def noErrors: Boolean
+    def noWarnings: Boolean = warnings.isEmpty
+    def noErrors: Boolean = errors.isEmpty
 
     def combine(other: Result): Result
+
+    def header: Option[String]
+    def errors: Map[OutputChecker, Seq[ErrorType]]
+    def warnings: Map[OutputChecker, Seq[WarningType]]
   }
 
   private case class ResultGroup(
       header: Option[String],
       errors: Map[OutputChecker, Seq[ErrorType]],
       warnings: Map[OutputChecker, Seq[WarningType]]) extends Result {
+    import Result.MergeFunctions._
 
     //could refactor this to take getters & setters as parameters
     //to avoid duplicating code between addWarnings and addErrors,
@@ -67,9 +72,9 @@ object OutputChecker {
 
     override def combine(other: Result): Result = {
       ResultGroup(
-        mergeHeaders(left.header, right.header),
-        errors = mergeMaps(left.errors, right.errors),
-        warnings = mergeMaps(left.warnings, right.warnings)
+        mergeHeaders(header, other.header),
+        errors = mergeMaps(errors, other.errors),
+        warnings = mergeMaps(warnings, other.warnings)
       )
     }
   }
@@ -79,19 +84,6 @@ object OutputChecker {
     type WarningType = Throwable
 
     val empty: Result = ResultGroup(None, Map.empty, Map.empty)
-
-    private def mergeMaps[K, E](left: Map[K, Seq[E]],
-                                right: Map[K, Seq[E]]):
-      Map[K, Seq[E]] = {
-
-      right.foldLeft(left) {
-        case (acc, (thisKey, values)) => {
-          val currentValues = acc.getOrElse(thisKey, Seq.empty)
-          val newValues = currentValues ++ values
-          acc.updated(thisKey, newValues)
-        }
-      }
-    }
 
     private def withFormatter(f: Formatter => Unit): String = {
       val fmt: Formatter = new Formatter(new StringBuffer())
@@ -117,20 +109,35 @@ object OutputChecker {
       withFormatter { fmt =>
         fmt.format("%s\n%s\n%s\n",
           defaultHeader(r),
-          printSeq(r.errors, subsectionIndentation)
+          printSeq(r.errors.toSeq, subsectionIndentation)
           )
       }
     }
 
+    object MergeFunctions {
+      def mergeMaps[K, E](left: Map[K, Seq[E]],
+                                  right: Map[K, Seq[E]]):
+        Map[K, Seq[E]] = {
 
-    private def mergeHeaders(left: Option[String],
-                             right: Option[String]): Option[String] = {
+        right.foldLeft(left) {
+          case (acc, (thisKey, values)) => {
+            val currentValues = acc.getOrElse(thisKey, Seq.empty)
+            val newValues = currentValues ++ values
+            acc.updated(thisKey, newValues)
+          }
+        }
+      }
 
-      (left, right) match {
-        case (None, None) => None
-        case _ => {
-          Some(s"Headers < " + left.getOrElse("None") + ", " +
-            right.getOrElse(None) + " >")
+      def mergeHeaders(left: Option[String],
+                               right: Option[String]): Option[String] = {
+
+
+        (left, right) match {
+          case (None, None) => None
+          case _ => {
+            Some(s"Headers < " + left.getOrElse("None") + ", " +
+              right.getOrElse(None) + " >")
+          }
         }
       }
     }
