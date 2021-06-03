@@ -59,7 +59,7 @@ object CombinedChecker {
       }
     }
 
-    private def checkNotEmpty: Unit = {
+    private def checkNotEmpty(): Unit = {
       if(passed.isEmpty && failed.isEmpty) {
         throw NoCheckersError
       } else {}
